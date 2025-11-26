@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V24 - 活動執行戰情室</title>
+    <title>婚禮神攝手 V25 - 活動執行戰情室</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -35,7 +35,7 @@
         .cat-btn:not(.active) { border-left-color: transparent !important; color: #64748b !important; }
         .screen-mode-btn.active { transform: scale(1.02); }
         .screen-controls-hidden .screen-controller, .screen-controls-hidden .screen-header { opacity: 0 !important; pointer-events: none !important; }
-        .screen-controller, .screen-header { transition: opacity 0.5s ease; }
+        .screen-controller, .screen-header { transition: opacity 0.3s ease; }
         .photo-preview { aspect-ratio: 4/3; background: #1e293b; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
     </style>
@@ -64,10 +64,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V24</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V25</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>📡 多設備同步：</strong> 開啟多個瀏覽器視窗，所有操作會自動同步（每 5 秒更新）。</div>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 text-xs text-green-800"><strong>✅ V25 新功能：</strong> 多設備即時同步！所有操作會自動同步到其他設備。</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -89,13 +89,24 @@
         <div class="mb-6 p-4 rounded-xl border border-slate-200 bg-slate-50"><div class="flex justify-between items-center mb-3"><div><h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><span class="material-symbols-outlined">how_to_reg</span> 報名狀態</h3><p class="text-sm text-slate-500">控制 LINE 官方帳號是否接受新照片</p></div><span class="text-xs font-bold px-2 py-1 rounded" id="submission-status-badge">檢查中...</span></div><button class="w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition" id="btn-toggle-submission" onclick="toggleSubmissionAPI()"><span class="material-symbols-outlined" id="submission-icon">toggle_on</span><span id="submission-btn-text">載入中...</span></button></div>
         <div class="mb-6 p-4 rounded-xl border border-blue-200 bg-blue-50"><div class="flex justify-between items-center mb-3"><div><h3 class="font-bold text-lg text-blue-800 flex items-center gap-2"><span class="material-symbols-outlined">cloud_download</span> 自動備份</h3><p class="text-sm text-blue-600">每 5 分鐘自動下載新照片</p></div><span class="text-xs font-bold px-2 py-1 rounded" id="backup-status-badge">未啟用</span></div><div class="space-y-3"><div class="flex gap-2"><button class="flex-1 py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-blue-600 hover:bg-blue-700 text-white" onclick="selectBackupFolder()"><span class="material-symbols-outlined">folder_open</span><span id="backup-folder-text">選擇資料夾</span></button><button class="py-3 px-4 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-slate-200 hover:bg-slate-300 text-slate-700" id="btn-toggle-backup" onclick="toggleAutoBackup()" disabled><span class="material-symbols-outlined" id="backup-toggle-icon">play_arrow</span></button></div><div class="text-xs text-blue-700 bg-blue-100 rounded-lg p-2"><div class="flex justify-between"><span>已備份:</span> <span id="backup-count">0 張</span></div><div class="flex justify-between"><span>入圍備份:</span> <span id="backup-approved-count">0 張</span></div></div></div></div>
         <div class="mb-6 p-4 rounded-xl border border-slate-200"><h3 class="font-bold text-lg text-slate-800 mb-3 flex items-center gap-2"><span class="material-symbols-outlined">download</span> 手動下載</h3><div class="grid grid-cols-2 gap-3"><button class="py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-slate-700 hover:bg-slate-800 text-white" onclick="downloadAllPhotos()"><span class="material-symbols-outlined">photo_library</span> 全部照片</button><button class="py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-pink-600 hover:bg-pink-700 text-white" onclick="downloadApprovedPhotos()"><span class="material-symbols-outlined">stars</span> 入圍照片</button></div></div>
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-500 flex flex-col gap-2"><div class="flex justify-between"><span>後端照片:</span> <span class="font-mono text-green-600" id="debug-photos">0 張</span></div><div class="flex justify-between"><span>記憶體:</span> <span class="font-mono text-blue-600" id="debug-mem">--</span></div><div class="flex justify-between"><span>自動清空:</span> <span class="font-mono text-orange-600">6 小時無活動</span></div></div>
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-500 flex flex-col gap-2"><div class="flex justify-between"><span>後端照片:</span> <span class="font-mono text-green-600" id="debug-photos">0 張</span></div><div class="flex justify-between"><span>最大容量:</span> <span class="font-mono text-blue-600" id="debug-max">150 張</span></div><div class="flex justify-between"><span>記憶體:</span> <span class="font-mono text-blue-600" id="debug-mem">--</span></div></div>
     </div>
 </div>
 
 <!-- Header -->
 <nav class="bg-white border-b h-16 flex items-center justify-between px-6 flex-shrink-0 z-20 shadow-sm relative w-full" id="main-header">
-    <div class="flex items-center gap-4"><div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div><div><h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V24</span></h1><div class="text-xs text-slate-500 flex items-center gap-1"><span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span></div></div></div>
+    <div class="flex items-center gap-4">
+        <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
+        <div>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V25</span></h1>
+            <div class="text-xs text-slate-500 flex items-center gap-1">
+                <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
+                狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
+                <!-- 🆕 V25: 重新連線按鈕 -->
+                <button class="ml-2 px-2 py-0.5 bg-blue-500 text-white text-[10px] rounded font-bold hover:bg-blue-600 hidden" id="btn-reconnect" onclick="manualReconnect()">重新連線</button>
+            </div>
+        </div>
+    </div>
     <div class="flex bg-slate-100 p-1 rounded-xl shadow-inner"><button class="px-5 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 bg-white shadow-sm text-slate-800 ring-1 ring-slate-200" id="tab-helper" onclick="switchTab('helper')"><span class="material-symbols-outlined text-lg">filter_alt</span> 小幫手</button><button class="px-5 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 text-slate-500 hover:text-slate-900" id="tab-couple" onclick="switchTab('couple')"><span class="material-symbols-outlined text-lg">how_to_reg</span> 新人</button><button class="px-5 py-2 rounded-lg text-sm font-bold transition text-slate-500 hover:text-slate-900 flex items-center gap-2" id="tab-screen" onclick="switchTab('screen')"><span class="material-symbols-outlined text-lg">connected_tv</span> 投影</button></div>
     <button class="p-2 text-slate-400 hover:text-slate-700 transition" onclick="document.getElementById('settings-modal').classList.remove('hidden')"><span class="material-symbols-outlined">settings</span></button>
 </nav>
@@ -144,27 +155,59 @@
 
 <script>
 const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 'text-blue-600', lb: 'bg-blue-600' }, bride: { name: '最美新娘賞', bg: 'bg-pink-100', text: 'text-pink-600', lb: 'bg-pink-600' }, creative: { name: '最佳創意賞', bg: 'bg-amber-100', text: 'text-amber-600', lb: 'bg-amber-600' } };
-const avatarStyles = ['adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral', 'big-ears', 'big-ears-neutral', 'big-smile', 'bottts', 'bottts-neutral', 'croodles', 'croodles-neutral', 'fun-emoji', 'lorelei', 'lorelei-neutral', 'micah', 'personas'];
+
+// 🆕 V25: 更新頭像列表 - 排除可能產生黑畫面的風格
+const avatarStyles = [
+    'adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral',
+    'big-ears', 'big-ears-neutral', 'big-smile', 'bottts',
+    'croodles', 'croodles-neutral', 'fun-emoji', 'lorelei', 
+    'micah', 'miniavs', 'notionists', 'open-peeps'
+];
+
 const API_URL = "https://fongde-wedding-backend.onrender.com";
 let submissions = new Map(), currentRole = 'helper', helperMode = 'pending', coupleFilter = 'all', appState = { submissionsOpen: true, winnersLocked: false }, screenMode = 'loop', screenIndex = 0, playInterval = null, pollInterval = null, synth = null, mouseIdleTimer = null, isFullscreen = false;
 let backupFolderHandle = null, backupInterval = null, backedUpPhotos = new Set(), backedUpApproved = new Set();
+let isConnected = false;
+let failedAttempts = 0;
 
-function getRandomAvatar(seed) { const hash = Math.abs(hashCode(seed || 'default')); return `https://api.dicebear.com/7.x/${avatarStyles[hash % avatarStyles.length]}/svg?seed=${seed}`; }
+function getRandomAvatar(seed) { 
+    const hash = Math.abs(hashCode(seed || 'default')); 
+    const style = avatarStyles[hash % avatarStyles.length];
+    // 🆕 V25: 加入背景色確保不會黑畫面
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`; 
+}
 function hashCode(str) { let hash = 0; for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash = hash & hash; } return hash; }
 
 window.addEventListener('beforeunload', e => { if (submissions.size > 0) { e.preventDefault(); e.returnValue = '確定要離開嗎？未儲存的資料可能會遺失。'; return e.returnValue; } });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('lightbox').classList.contains('hidden')) closeLightbox(null, true); });
 
 function startApp() { document.getElementById('intro-modal').style.display = 'none'; initAudio(); initScreenAutoHide(); document.getElementById('sys-status').innerText = "連線中..."; document.getElementById('sys-status').className = "font-bold text-yellow-600"; document.getElementById('status-dot').className = "w-2 h-2 bg-yellow-500 rounded-full animate-pulse"; document.getElementById('helper-msg').innerText = "正在等待伺服器回應..."; startPolling(); refreshAll(); startScreenLoop(); }
-function initScreenAutoHide() { const sv = document.getElementById('view-screen'); sv.addEventListener('mousemove', () => { showScreenControls(); resetMouseIdleTimer(); }); sv.addEventListener('mouseleave', () => clearTimeout(mouseIdleTimer)); document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; document.getElementById('fullscreen-icon').textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen'; }); }
+
+function initScreenAutoHide() { 
+    const sv = document.getElementById('view-screen'); 
+    sv.addEventListener('mousemove', () => { showScreenControls(); resetMouseIdleTimer(); }); 
+    sv.addEventListener('mouseleave', () => clearTimeout(mouseIdleTimer)); 
+    document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; document.getElementById('fullscreen-icon').textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen'; }); 
+}
 function showScreenControls() { document.getElementById('view-screen').classList.remove('screen-controls-hidden'); }
 function hideScreenControls() { document.getElementById('view-screen').classList.add('screen-controls-hidden'); }
-function resetMouseIdleTimer() { clearTimeout(mouseIdleTimer); mouseIdleTimer = setTimeout(hideScreenControls, 3000); }
+// 🆕 V25: 縮短隱藏延遲至 1 秒
+function resetMouseIdleTimer() { clearTimeout(mouseIdleTimer); mouseIdleTimer = setTimeout(hideScreenControls, 1000); }
 function toggleFullscreen() { const sv = document.getElementById('view-screen'); if (!document.fullscreenElement) sv.requestFullscreen().catch(console.error); else document.exitFullscreen(); }
 async function initAudio() { await Tone.start(); synth = new Tone.PolySynth(Tone.Synth).toDestination(); synth.volume.value = -6; }
 function refreshAll() { renderHelper(); renderCouple(); updateProgress(); }
 
-async function startPolling() { await fetchData(true); await checkTestMode(); await checkSubmissionStatus(); pollInterval = setInterval(fetchData, 5000); }
+// 🆕 V25: 手動重新連線
+function manualReconnect() {
+    failedAttempts = 0;
+    document.getElementById('btn-reconnect').classList.add('hidden');
+    document.getElementById('sys-status').innerText = "重新連線中...";
+    document.getElementById('sys-status').className = "font-bold text-yellow-600";
+    document.getElementById('status-dot').className = "w-2 h-2 bg-yellow-500 rounded-full animate-pulse";
+    fetchData(true);
+}
+
+async function startPolling() { await fetchData(true); await checkTestMode(); await checkSubmissionStatus(); pollInterval = setInterval(fetchData, 3000); }
 async function checkTestMode() { try { const res = await fetch(`${API_URL}/api/test-mode`); if(res.ok) { const data = await res.json(); updateTestModeUI(data.testMode); } } catch(e) {} }
 async function toggleTestMode() { const btn = document.getElementById('btn-toggle-test-mode'); btn.disabled = true; try { const res = await fetch(`${API_URL}/api/test-mode`, { method: 'POST' }); if(res.ok) { const data = await res.json(); updateTestModeUI(data.testMode); alert(data.message); } } catch(e) { alert('連線失敗'); } btn.disabled = false; }
 function updateTestModeUI(isTestMode) { const badge = document.getElementById('test-mode-badge'), btn = document.getElementById('btn-toggle-test-mode'), icon = document.getElementById('test-mode-icon'), btnText = document.getElementById('test-mode-btn-text'); if(isTestMode) { badge.textContent = '已開啟'; badge.className = 'text-xs font-bold px-2 py-1 rounded bg-amber-500 text-white'; btn.className = 'w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-amber-500 hover:bg-amber-600 text-white'; icon.textContent = 'toggle_on'; btnText.textContent = '關閉測試模式'; } else { badge.textContent = '已關閉'; badge.className = 'text-xs font-bold px-2 py-1 rounded bg-slate-200 text-slate-600'; btn.className = 'w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-slate-200 hover:bg-slate-300 text-slate-700'; icon.textContent = 'toggle_off'; btnText.textContent = '開啟測試模式'; } }
@@ -172,19 +215,158 @@ async function checkSubmissionStatus() { try { const res = await fetch(`${API_UR
 async function toggleSubmissionAPI() { const btn = document.getElementById('btn-toggle-submission'); btn.disabled = true; try { const res = await fetch(`${API_URL}/api/submission-status`, { method: 'POST' }); if(res.ok) { const data = await res.json(); updateSubmissionStatusUI(data.submissionsOpen); alert(data.message); } } catch(e) { alert('連線失敗'); } btn.disabled = false; }
 function updateSubmissionStatusUI(isOpen) { const badge = document.getElementById('submission-status-badge'), btn = document.getElementById('btn-toggle-submission'), icon = document.getElementById('submission-icon'), btnText = document.getElementById('submission-btn-text'); if(isOpen) { badge.textContent = '開放中'; badge.className = 'text-xs font-bold px-2 py-1 rounded bg-green-500 text-white'; btn.className = 'w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-green-500 hover:bg-green-600 text-white'; icon.textContent = 'toggle_on'; btnText.textContent = '暫停報名'; } else { badge.textContent = '已暫停'; badge.className = 'text-xs font-bold px-2 py-1 rounded bg-red-500 text-white'; btn.className = 'w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition bg-red-500 hover:bg-red-600 text-white'; icon.textContent = 'toggle_off'; btnText.textContent = '恢復報名'; } }
 
-async function fetchData(isFirst = false) { try { const res = await fetch(`${API_URL}/api/photos`); if(!res.ok) throw new Error(`HTTP ${res.status}`); const data = await res.json(); let hasNew = false; data.forEach(remote => { const uid = remote.odialog || remote.userId || remote.id.toString(); const old = submissions.get(uid); if(!old || remote.timestamp > old.timestamp) { const existingStatus = old ? old.status : 'pending'; const existingIsWinner = old ? old.isWinner : false; const avatarSeed = remote.odialog || remote.userId || uid; const p = { ...remote, odialog: uid, status: existingStatus, isWinner: existingIsWinner, avatar: remote.avatar || getRandomAvatar(avatarSeed) }; submissions.set(uid, p); hasNew = true; } }); fetch(`${API_URL}/api/status`).then(r=>r.json()).then(h=>{ if(h) { if(h.memory) document.getElementById('debug-mem').innerText = h.memory.heapUsed; document.getElementById('debug-photos').innerText = `${h.photos} 張`; if(h.testMode !== undefined) updateTestModeUI(h.testMode); if(h.submissionsOpen !== undefined) updateSubmissionStatusUI(h.submissionsOpen); } }).catch(()=>{}); if(isFirst) { document.getElementById('sys-status').innerText = "正式連線"; document.getElementById('sys-status').className = "font-bold text-green-600"; document.getElementById('status-dot').className = "w-2 h-2 bg-green-500 rounded-full animate-pulse"; document.getElementById('helper-msg').innerText = "連線成功！等待新照片中..."; } if(hasNew) refreshAll(); } catch(e) { console.error(e); document.getElementById('sys-status').innerText = "連線中斷"; document.getElementById('sys-status').className = "font-bold text-red-600"; document.getElementById('status-dot').className = "w-2 h-2 bg-red-500 rounded-full animate-pulse"; document.getElementById('helper-msg').innerText = `連線失敗 (${e.message})`; } }
+// 🆕 V25: 改進的資料同步
+async function fetchData(isFirst = false) { 
+    try { 
+        const res = await fetch(`${API_URL}/api/photos`); 
+        if(!res.ok) throw new Error(`HTTP ${res.status}`); 
+        const data = await res.json(); 
+        
+        // 🆕 V25: 完全同步後端狀態
+        const newSubmissions = new Map();
+        data.forEach(remote => { 
+            const uid = remote.odialog || remote.userId || remote.id.toString(); 
+            const avatarSeed = remote.odialog || remote.userId || uid;
+            newSubmissions.set(uid, {
+                ...remote, 
+                odialog: uid,
+                avatar: remote.avatar || getRandomAvatar(avatarSeed)
+            });
+        });
+        
+        // 檢查是否有變化
+        const hasChanges = newSubmissions.size !== submissions.size || 
+            Array.from(newSubmissions.entries()).some(([k, v]) => {
+                const old = submissions.get(k);
+                return !old || old.status !== v.status || old.isWinner !== v.isWinner || old.timestamp !== v.timestamp;
+            });
+        
+        submissions = newSubmissions;
+        
+        fetch(`${API_URL}/api/status`).then(r=>r.json()).then(h=>{ 
+            if(h) { 
+                if(h.memory) document.getElementById('debug-mem').innerText = h.memory.heapUsed; 
+                document.getElementById('debug-photos').innerText = `${h.photos} 張`; 
+                if(h.maxPhotos) document.getElementById('debug-max').innerText = `${h.maxPhotos} 張`;
+                if(h.testMode !== undefined) updateTestModeUI(h.testMode); 
+                if(h.submissionsOpen !== undefined) updateSubmissionStatusUI(h.submissionsOpen); 
+            } 
+        }).catch(()=>{}); 
+        
+        if(isFirst || !isConnected) { 
+            isConnected = true;
+            failedAttempts = 0;
+            document.getElementById('btn-reconnect').classList.add('hidden');
+            document.getElementById('sys-status').innerText = "正式連線"; 
+            document.getElementById('sys-status').className = "font-bold text-green-600"; 
+            document.getElementById('status-dot').className = "w-2 h-2 bg-green-500 rounded-full animate-pulse"; 
+            document.getElementById('helper-msg').innerText = "連線成功！等待新照片中..."; 
+        } 
+        
+        if(hasChanges) refreshAll(); 
+    } catch(e) { 
+        console.error(e); 
+        isConnected = false;
+        failedAttempts++;
+        document.getElementById('sys-status').innerText = "連線中斷"; 
+        document.getElementById('sys-status').className = "font-bold text-red-600"; 
+        document.getElementById('status-dot').className = "w-2 h-2 bg-red-500 rounded-full"; 
+        document.getElementById('helper-msg').innerText = `連線失敗 (${e.message})`;
+        // 🆕 V25: 顯示重新連線按鈕
+        if(failedAttempts >= 2) {
+            document.getElementById('btn-reconnect').classList.remove('hidden');
+        }
+    } 
+}
 
 function resetSystem(){ if(confirm('❌ 警告：嚴重操作！\n\n這將清空【所有】照片與名單。\n確定要全部重置？')){ if(confirm('再次確認：真的要刪除所有資料嗎？')) { submissions.clear(); appState.winnersLocked=false; document.getElementById('btn-mode-winner').disabled=true; document.getElementById('btn-mode-winner').classList.add('opacity-30','cursor-not-allowed'); refreshAll(); setScreenMode('loop'); fetch(`${API_URL}/api/clear`, {method:'POST'}).catch(console.error); } } }
 
 function setHelperMode(m){ helperMode=m; document.getElementById('btn-helper-pending').className = m==='pending' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-slate-800" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white"; document.getElementById('btn-helper-trash').className = m==='trash' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-red-600 flex items-center gap-1" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white flex items-center gap-1"; renderHelper(); }
 function renderHelper(){ const g = document.getElementById('helper-grid-content'); g.innerHTML=''; const list = Array.from(submissions.values()).filter(p => helperMode==='pending' ? p.status==='pending' : p.status==='rejected').sort((a,b) => b.timestamp - a.timestamp); document.getElementById('helper-empty').classList.toggle('hidden', list.length > 0); list.forEach(p => { const photoKey = p.odialog || p.userId; const div = document.createElement('div'); div.className = 'bg-slate-100 rounded-xl overflow-hidden group relative cursor-zoom-in pop-in flex flex-col border border-slate-200'; div.onclick = () => openLightbox(photoKey); div.innerHTML = `<div class="photo-preview relative"><img src="${p.url}" class="max-w-full max-h-full object-contain"><div class="absolute top-2 left-2 px-2 py-1 rounded text-[10px] font-bold ${categories[p.cat].bg} ${categories[p.cat].text} shadow-sm z-10 new-tag">${categories[p.cat].name}</div></div><div class="p-2 bg-white flex justify-between items-center text-xs border-t h-10"><div class="truncate text-slate-600 font-medium w-full">${p.uploader}</div>${helperMode==='trash' ? '<span class="text-red-400 font-bold text-[10px] shrink-0">已刪除</span>' : ''}</div>`; g.appendChild(div); }); }
-function updateStatus(photoKey, s){ const p = submissions.get(photoKey); if(p){ p.status = s; submissions.set(photoKey, p); refreshAll(); if(s === 'approved') showToast(p.uploader); } }
+
+// 🆕 V25: 更新狀態到後端
+async function updateStatus(photoKey, s){ 
+    const p = submissions.get(photoKey); 
+    if(p){ 
+        p.status = s; 
+        submissions.set(photoKey, p); 
+        refreshAll(); 
+        if(s === 'approved') showToast(p.uploader); 
+        
+        // 同步到後端
+        try {
+            await fetch(`${API_URL}/api/photos/${photoKey}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: s })
+            });
+        } catch(e) { console.error('狀態同步失敗', e); }
+    } 
+}
+
 function updateProgress(){ const l = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); const c = {groom:0, bride:0, creative:0}; l.forEach(p => c[p.cat]++); ['groom','bride','creative'].forEach(k => { document.getElementById(`prog-${k}`).textContent = `${k==='groom'?'🤵':(k==='bride'?'👰':'💡')} ${c[k]}`; }); }
 
 function filterCouple(c){ coupleFilter = c; document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === c)); renderCouple(); }
 function renderCouple(){ const g = document.getElementById('couple-grid-content'); g.innerHTML=''; let list = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); if(coupleFilter !== 'all') list = list.filter(p => p.cat === coupleFilter); list.sort((a,b) => b.timestamp - a.timestamp); list.forEach(p => { const photoKey = p.odialog || p.userId; const div = document.createElement('div'); div.className = `rounded-xl overflow-hidden relative cursor-pointer group bg-slate-100 shadow-sm border ${p.isWinner?'ring-4 ring-pink-500 z-10':''}`; div.onclick = () => openLightbox(photoKey); div.innerHTML = `<div class="photo-preview relative"><img src="${p.url}" class="max-w-full max-h-full object-contain">${p.isWinner?'<div class="absolute inset-0 bg-pink-500/20 flex items-center justify-center pointer-events-none"><span class="material-symbols-outlined text-white text-5xl drop-shadow-lg">trophy</span></div>':''}</div><div class="p-2 bg-white flex justify-between text-xs font-bold text-slate-600 border-t"><span>${categories[p.cat].name}</span> <span class="truncate max-w-[80px]">${p.uploader}</span></div>`; g.appendChild(div); }); const w = Array.from(submissions.values()).filter(p => p.isWinner); ['groom','bride','creative'].forEach(c => { const x = w.find(i => i.cat === c); document.getElementById(`stat-winner-${c}`).innerHTML = x ? `<div class="flex items-center gap-2 text-${categories[c].text.split('-')[1]}-700 font-bold"><span class="material-symbols-outlined text-sm">check_circle</span> ${categories[c].name}</div> <img src="${x.avatar}" class="w-5 h-5 rounded-full border">` : `<span>${categories[c].name}</span> <span class="text-slate-300">--</span>`; }); const btn = document.getElementById('btn-lock-winners'); if(w.length === 3 && !appState.winnersLocked){ btn.disabled=false; btn.className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg animate-pulse flex items-center gap-2 cursor-pointer"; btn.innerHTML='<span class="material-symbols-outlined">verified</span> 確認並鎖定'; } else if(appState.winnersLocked){ btn.disabled=true; btn.className="bg-slate-800 text-white/50 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; btn.innerHTML='<span class="material-symbols-outlined">lock</span> 名單已鎖定'; } else { btn.disabled=true; btn.className="bg-slate-200 text-slate-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; } }
-function toggleWinner(photoKey){ if(appState.winnersLocked) return; const p = submissions.get(photoKey); if(!p) return; if(p.isWinner) { p.isWinner = false; } else { Array.from(submissions.entries()).filter(([k, x]) => x.cat === p.cat && x.isWinner).forEach(([k, x]) => { x.isWinner = false; submissions.set(k, x); }); p.isWinner = true; } submissions.set(photoKey, p); refreshAll(); }
-function returnToPending(photoKey) { const p = submissions.get(photoKey); if(p) { p.status = 'pending'; p.isWinner = false; submissions.set(photoKey, p); refreshAll(); closeLightbox(null, true); } }
+
+// 🆕 V25: 同步冠軍狀態到後端
+async function toggleWinner(photoKey){ 
+    if(appState.winnersLocked) return; 
+    const p = submissions.get(photoKey); 
+    if(!p) return; 
+    
+    const newWinnerState = !p.isWinner;
+    
+    if(newWinnerState) {
+        // 先取消同類別其他冠軍
+        for(const [k, x] of submissions) {
+            if(x.cat === p.cat && x.isWinner) { 
+                x.isWinner = false; 
+                submissions.set(k, x);
+                // 同步到後端
+                fetch(`${API_URL}/api/photos/${k}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isWinner: false })
+                }).catch(console.error);
+            }
+        }
+    }
+    
+    p.isWinner = newWinnerState;
+    submissions.set(photoKey, p); 
+    refreshAll();
+    
+    // 同步到後端
+    try {
+        await fetch(`${API_URL}/api/photos/${photoKey}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isWinner: newWinnerState })
+        });
+    } catch(e) { console.error('冠軍狀態同步失敗', e); }
+}
+
+// 🆕 V25: 退回初選也同步到後端
+async function returnToPending(photoKey) { 
+    const p = submissions.get(photoKey); 
+    if(p) { 
+        p.status = 'pending'; 
+        p.isWinner = false; 
+        submissions.set(photoKey, p); 
+        refreshAll(); 
+        closeLightbox(null, true);
+        
+        // 同步到後端
+        try {
+            await fetch(`${API_URL}/api/photos/${photoKey}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'pending', isWinner: false })
+            });
+        } catch(e) { console.error('退回初選同步失敗', e); }
+    } 
+}
 
 function getLightboxList(){ if(currentRole === 'helper') return Array.from(submissions.values()).filter(p => helperMode==='pending'?p.status==='pending':p.status==='rejected').sort((a,b)=>b.timestamp-a.timestamp); else { let l = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner').sort((a,b)=>b.timestamp-a.timestamp); if(coupleFilter !== 'all') l = l.filter(p => p.cat === coupleFilter); return l; } }
 function openLightbox(photoKey){ const p = submissions.get(photoKey); if(!p) return; const lb = document.getElementById('lightbox'); document.getElementById('lb-img').src = p.url; const catBadge = document.getElementById('lb-cat-badge'); catBadge.innerText = categories[p.cat].name; catBadge.className = `inline-block px-4 py-1.5 rounded-full text-base font-bold text-white mb-2 shadow-lg ${categories[p.cat].lb}`; document.getElementById('lb-user-display').innerText = p.uploader; document.getElementById('lb-feedback').classList.add('opacity-0'); renderLbActions(p); lb.classList.remove('hidden'); lb.dataset.uid = photoKey; requestAnimationFrame(() => lb.classList.remove('opacity-0')); }
@@ -201,7 +383,54 @@ function stopScreenLoop(){ if(playInterval) clearInterval(playInterval); playInt
 function togglePlay(){ if(playInterval) stopScreenLoop(); else startScreenLoop(); }
 function screenNext(){ screenIndex++; updateScreen(); }
 function screenPrev(){ screenIndex--; updateScreen(); }
-function revealSequence(cat){ const w = Array.from(submissions.values()).find(p => p.isWinner && p.cat === cat); if(!w) return; const photoKey = w.odialog || w.userId; const img = document.getElementById('screen-img'); const o = document.getElementById('intro-overlay'); document.getElementById('screen-info').style.opacity=0; document.getElementById('screen-winner-badge').classList.add('hidden'); img.src = w.url; img.className = 'screen-img blur-state'; img.style.opacity = 0.3; o.classList.remove('hidden'); document.getElementById('intro-title').innerText = categories[cat].name; setTimeout(() => { o.classList.add('hidden'); img.className = 'screen-img clear-state'; img.style.opacity = 1; if(synth) { const now = Tone.now(); synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now); synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "2n", now + 0.5); } const f = document.createElement('div'); f.className = 'absolute inset-0 bg-white z-50'; document.getElementById('view-screen').appendChild(f); f.animate([{opacity:1}, {opacity:0}], {duration:1000}).onfinish = () => f.remove(); setTimeout(() => { document.getElementById('screen-user').innerText = w.uploader; document.getElementById('screen-cat-tag').innerText = categories[cat].name; document.getElementById('screen-avatar').src = w.avatar || getRandomAvatar(photoKey); document.getElementById('screen-info').style.opacity = 1; document.getElementById('screen-winner-badge').classList.remove('hidden'); for(let k=0; k<60; k++){ const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.backgroundColor = ['#f00', '#0f0', '#00f', '#ff0'][Math.floor(Math.random() * 4)]; c.style.animationDuration = Math.random() * 2 + 2 + 's'; document.getElementById('view-screen').appendChild(c); setTimeout(() => c.remove(), 4000); } }, 800); }, 2500); }
+
+// 🆕 V25: 頒獎揭曉延長 4 秒 (2.5 → 6.5 秒)
+function revealSequence(cat){ 
+    const w = Array.from(submissions.values()).find(p => p.isWinner && p.cat === cat); 
+    if(!w) { alert('請先在「新人」頁面選擇此類別的冠軍！'); return; }
+    const photoKey = w.odialog || w.userId; 
+    const img = document.getElementById('screen-img'); 
+    const o = document.getElementById('intro-overlay'); 
+    document.getElementById('screen-info').style.opacity=0; 
+    document.getElementById('screen-winner-badge').classList.add('hidden'); 
+    img.src = w.url; 
+    img.className = 'screen-img blur-state'; 
+    img.style.opacity = 0.3; 
+    o.classList.remove('hidden'); 
+    document.getElementById('intro-title').innerText = categories[cat].name; 
+    
+    // 🆕 V25: 延長至 6.5 秒 (原本 2.5 秒 + 4 秒)
+    setTimeout(() => { 
+        o.classList.add('hidden'); 
+        img.className = 'screen-img clear-state'; 
+        img.style.opacity = 1; 
+        if(synth) { 
+            const now = Tone.now(); 
+            synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now); 
+            synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "2n", now + 0.5); 
+        } 
+        const f = document.createElement('div'); 
+        f.className = 'absolute inset-0 bg-white z-50'; 
+        document.getElementById('view-screen').appendChild(f); 
+        f.animate([{opacity:1}, {opacity:0}], {duration:1000}).onfinish = () => f.remove(); 
+        setTimeout(() => { 
+            document.getElementById('screen-user').innerText = w.uploader; 
+            document.getElementById('screen-cat-tag').innerText = categories[cat].name; 
+            document.getElementById('screen-avatar').src = w.avatar || getRandomAvatar(photoKey); 
+            document.getElementById('screen-info').style.opacity = 1; 
+            document.getElementById('screen-winner-badge').classList.remove('hidden'); 
+            for(let k=0; k<60; k++){ 
+                const c = document.createElement('div'); 
+                c.className = 'confetti'; 
+                c.style.left = Math.random() * 100 + 'vw'; 
+                c.style.backgroundColor = ['#f00', '#0f0', '#00f', '#ff0'][Math.floor(Math.random() * 4)]; 
+                c.style.animationDuration = Math.random() * 2 + 2 + 's'; 
+                document.getElementById('view-screen').appendChild(c); 
+                setTimeout(() => c.remove(), 4000); 
+            } 
+        }, 800); 
+    }, 6500);  // 🆕 V25: 2500 → 6500
+}
 
 function openConfirmModal(){ ['groom','bride','creative'].forEach(c => { const w = Array.from(submissions.values()).find(x => x.isWinner && x.cat === c); if(w) { document.getElementById(`confirm-card-${c}`).innerHTML = `<div class="font-bold text-${categories[c].text.split('-')[1]}-800 mb-2">${categories[c].name}</div><div class="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center rounded-lg mb-2 shadow-inner overflow-hidden border"><img src="${w.url}" class="max-w-full max-h-full object-contain"></div><div class="font-bold text-slate-700">${w.uploader}</div>`; } }); document.getElementById('confirm-modal').classList.remove('hidden'); }
 function closeConfirmModal(){ document.getElementById('confirm-modal').classList.add('hidden'); }
