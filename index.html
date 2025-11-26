@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 引入 Material Symbols，並啟用 FILL 屬性 -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -20,7 +21,6 @@
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* 修正：層級改為 999 保證在最上層，增加陰影 */
         .confetti { 
             position: absolute; 
             width: 15px; 
@@ -47,11 +47,8 @@
         .screen-mode-btn.active { transform: scale(1.02); }
         .screen-controls-hidden .screen-controller, .screen-controls-hidden .screen-header { opacity: 0 !important; pointer-events: none !important; }
         .screen-controller, .screen-header { transition: opacity 0.3s ease; }
-        
-        /* 16:9 照片框 */
         .photo-preview { aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
         .notification-badge { animation: bounce-badge 1s infinite; }
         @keyframes bounce-badge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
@@ -59,8 +56,13 @@
         .heart-pop { animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes heartPop { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
         
-        /* 實心愛心樣式 */
-        .filled-heart { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* 實心愛心樣式 
+           font-variation-settings: 'FILL' 1  -> 這是關鍵，讓圖示變成實心
+        */
+        .filled-heart { 
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 加一點陰影更立體 */
+        }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden text-slate-800">
@@ -72,7 +74,7 @@
             <div class="flex items-center gap-3">
                 <div class="font-black text-2xl text-white tracking-wide drop-shadow-lg" id="lb-user-display">User Name</div>
                 <!-- 愛心標記 (燈箱內) - 使用 filled-heart 確保實心 -->
-                <span class="material-symbols-outlined filled-heart text-pink-500 text-3xl hidden heart-pop drop-shadow-lg" id="lb-heart-icon">favorite</span>
+                <span class="material-symbols-outlined filled-heart text-pink-500 text-4xl hidden heart-pop drop-shadow-lg" id="lb-heart-icon">favorite</span>
             </div>
             <div class="text-white/50 text-xs mt-1 font-mono">(雙擊照片加入最愛)</div>
         </div>
@@ -189,10 +191,10 @@ const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 
 const avatarStyles = [
     'adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral',
     'big-ears', 'big-ears-neutral', 'big-smile', 'bottts', 'bottts-neutral',
-    'croodles', 'croodles-neutral', 'fun-emoji', 'icons', 'lorelei', 
+    'croodles', 'croodles-neutral', 'fun-emoji', 'lorelei', 
     'lorelei-neutral', 'micah', 'miniavs', 'notionists', 'notionists-neutral', 
-    'open-peeps', 'personas', 'pixel-art', 'pixel-art-neutral', 'rings', 
-    'shapes', 'thumbs'
+    'open-peeps', 'personas', 'pixel-art', 'pixel-art-neutral', 
+    'thumbs'
 ];
 
 const API_URL = "https://fongde-wedding-backend.onrender.com";
