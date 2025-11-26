@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V26.4 - 12/6 決戰最終版</title>
+    <title>婚禮神攝手 V26.5 - 12/6 決戰最終修正版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -64,8 +64,15 @@
             z-index: 60;
         }
         
-        .screen-header { transition: opacity 0.3s ease; opacity: 0; }
-        .screen-header:hover { opacity: 1; } /* 滑鼠移上去才顯示 header */
+        /* 上方 Header 顯示邏輯 (加大觸發區) */
+        .screen-header { 
+            transition: opacity 0.3s ease; 
+            opacity: 0; 
+            height: 80px; /* 加大高度方便觸發 */
+            padding-top: 10px;
+            align-items: flex-start;
+        }
+        .screen-header:hover { opacity: 1; } 
 
         .photo-preview { aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -80,6 +87,13 @@
         .filled-heart { 
             font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
             text-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+        }
+        
+        /* 禁用的按鈕樣式 */
+        .btn-disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -111,10 +125,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.4</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.5</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.4 最終修正：</strong><br>• 徹底移除文字頭像 (白名單)<br>• 優化投影控制列 (滑鼠離開才收回)<br>• 實心愛心與隨機背景</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.5 最終修正：</strong><br>• 修復輪播衝突問題<br>• 優化上方工具列顯示範圍<br>• 嚴格的頒獎解鎖機制</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -142,7 +156,7 @@
     <div class="flex items-center gap-4">
         <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
         <div>
-            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.4</span></h1>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.5</span></h1>
             <div class="text-xs text-slate-500 flex items-center gap-1">
                 <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
                 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
@@ -174,7 +188,14 @@
         </div>
 
         <div class="view-section h-full bg-black hidden relative select-none overflow-hidden w-full" id="view-screen">
-            <div class="screen-header absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent z-40 flex items-center justify-between px-6"><div class="text-white/70 text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined">slideshow</span><span id="screen-mode-label">輪播模式</span></div><div class="flex items-center gap-3"><button class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition" onclick="toggleFullscreen()" title="全螢幕"><span class="material-symbols-outlined" id="fullscreen-icon">fullscreen</span></button><button class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition" onclick="switchTab('helper')" title="返回"><span class="material-symbols-outlined">close</span></button></div></div>
+            <!-- Header 加大觸發區 -->
+            <div class="screen-header absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent z-40 flex items-center justify-between px-6">
+                <div class="text-white/70 text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined">slideshow</span><span id="screen-mode-label">輪播模式</span></div>
+                <div class="flex items-center gap-4"> <!-- 加大間距 -->
+                    <button class="p-3 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition" onclick="toggleFullscreen()" title="全螢幕"><span class="material-symbols-outlined text-3xl" id="fullscreen-icon">fullscreen</span></button>
+                    <button class="p-3 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition" onclick="switchTab('helper')" title="返回"><span class="material-symbols-outlined text-3xl">close</span></button>
+                </div>
+            </div>
             <div class="w-full h-full flex items-center justify-center relative bg-black">
                 <img class="screen-img clear-state transition-opacity duration-500" id="screen-img" src="">
                 <div class="absolute top-8 right-8 z-30 hidden drop-shadow-xl animate-bounce" id="screen-winner-trophy"><span class="material-symbols-outlined text-yellow-400 text-9xl" style="text-shadow: 0 4px 20px rgba(0,0,0,0.9);">emoji_events</span></div>
@@ -194,7 +215,12 @@
             <div id="screen-trigger-zone"></div>
             <!-- 控制列 -->
             <div class="screen-controller absolute left-0 top-0 bottom-0 w-72 bg-gradient-to-r from-black/90 to-transparent z-50 flex flex-col items-start py-8 pl-4 overflow-y-auto hidden-scrollbar" id="screen-controller-panel">
-                <div class="mb-8 w-full pr-4 flex-shrink-0"><div class="text-white/30 text-[10px] uppercase font-bold mb-2 pl-1">Mode</div><div class="flex flex-col gap-2"><button class="screen-mode-btn active p-3 rounded-lg bg-blue-600 text-white shadow-lg flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden" id="btn-mode-loop" onclick="setScreenMode('loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">repeat</span><span class="font-bold text-sm">輪播模式</span></button><button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden" id="btn-mode-ceremony" onclick="setScreenMode('ceremony')"><span class="material-symbols-outlined text-xl flex-shrink-0">podium</span><span class="font-bold text-sm">頒獎典禮</span></button><button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden disabled:opacity-30 disabled:cursor-not-allowed" disabled id="btn-mode-winner" onclick="setScreenMode('winner_loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">star</span><span class="font-bold text-sm">頒獎後輪播</span></button></div></div>
+                <div class="mb-8 w-full pr-4 flex-shrink-0"><div class="text-white/30 text-[10px] uppercase font-bold mb-2 pl-1">Mode</div><div class="flex flex-col gap-2">
+                    <button class="screen-mode-btn active p-3 rounded-lg bg-blue-600 text-white shadow-lg flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden" id="btn-mode-loop" onclick="setScreenMode('loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">repeat</span><span class="font-bold text-sm">輪播模式</span></button>
+                    <!-- 頒獎模式按鈕：預設鎖定 -->
+                    <button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden btn-disabled" disabled id="btn-mode-ceremony" onclick="setScreenMode('ceremony')"><span class="material-symbols-outlined text-xl flex-shrink-0">podium</span><span class="font-bold text-sm">頒獎典禮</span></button>
+                    <button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden btn-disabled" disabled id="btn-mode-winner" onclick="setScreenMode('winner_loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">star</span><span class="font-bold text-sm">頒獎後輪播</span></button>
+                </div></div>
                 <div class="w-full pr-4 flex-shrink-0" id="controls-ceremony" style="display:none"><div class="flex flex-col gap-3"><div class="text-white/30 text-[10px] uppercase font-bold pl-1">Reveal</div><button class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-blue-400" onclick="revealSequence('groom')"><span class="material-symbols-outlined">man</span> 最帥新郎賞</button><button class="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-pink-400" onclick="revealSequence('bride')"><span class="material-symbols-outlined">woman</span> 最美新娘賞</button><button class="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-amber-400" onclick="revealSequence('creative')"><span class="material-symbols-outlined">lightbulb</span> 最佳創意賞</button></div></div>
                 <div class="flex-1 flex flex-col items-center gap-4 w-full pr-4 pt-10" id="controls-loop"><div class="text-white/30 text-[10px] uppercase font-bold pl-1 self-start">Playback</div><button class="p-4 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur" onclick="screenPrev()"><span class="material-symbols-outlined">arrow_upward</span></button><button class="p-5 bg-white text-black rounded-full shadow-lg hover:scale-110 transition" id="btn-play" onclick="togglePlay()"><span class="material-symbols-outlined text-3xl">pause</span></button><button class="p-4 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur" onclick="screenNext()"><span class="material-symbols-outlined">arrow_downward</span></button></div>
             </div>
@@ -206,7 +232,6 @@
 <script>
 const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 'text-blue-600', lb: 'bg-blue-600' }, bride: { name: '最美新娘賞', bg: 'bg-pink-100', text: 'text-pink-600', lb: 'bg-pink-600' }, creative: { name: '最佳創意賞', bg: 'bg-amber-100', text: 'text-amber-600', lb: 'bg-amber-600' } };
 
-// 修正：只保留圖案風格，移除可能產生 UA/U0 的文字頭像風格
 const avatarStyles = [
     'avataaars', 'bottts', 'fun-emoji', 'lorelei', 'micah', 'miniavs', 'open-peeps', 'personas', 'thumbs'
 ];
@@ -223,6 +248,7 @@ let backupFolderHandle = null, backupInterval = null, backedUpPhotos = new Set()
 let isConnected = false;
 let failedAttempts = 0;
 let lastApprovedIds = new Set(); 
+let winnersRevealedCount = 0; // 追蹤已揭曉數量
 
 let lbSnapshotList = [];
 let lbSnapshotIndex = 0;
@@ -238,7 +264,7 @@ function getRandomAvatar(seed) {
 function hashCode(str) { let hash = 0; for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash = hash & hash; } return hash; }
 
 window.addEventListener('beforeunload', e => { if (submissions.size > 0) { e.preventDefault(); e.returnValue = '確定要離開嗎？未儲存的資料可能會遺失。'; return e.returnValue; } });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('lightbox').classList.contains('hidden')) closeLightbox(null, true); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if(!document.getElementById('lightbox').classList.contains('hidden')) closeLightbox(null, true); if(isFullscreen) toggleFullscreen(); } });
 
 function saveToLocalCache() { try { const data = { submissions: Array.from(submissions.entries()), appState: appState, timestamp: Date.now() }; localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.warn('本地快取儲存失敗', e); } }
 function loadFromLocalCache() { try { const cached = localStorage.getItem(LOCAL_STORAGE_KEY); if (cached) { const data = JSON.parse(cached); if (Date.now() - data.timestamp < 60 * 60 * 1000) { submissions = new Map(data.submissions); if (data.appState) appState = data.appState; console.log(`📦 從本地快取載入 ${submissions.size} 張照片`); return true; } } } catch(e) { console.warn('本地快取載入失敗', e); } return false; }
@@ -271,7 +297,14 @@ function initScreenAutoHide() {
 function showScreenControls() { document.getElementById('view-screen').classList.remove('screen-controls-hidden'); }
 function hideScreenControls() { document.getElementById('view-screen').classList.add('screen-controls-hidden'); }
 function resetMouseIdleTimer() { clearTimeout(mouseIdleTimer); mouseIdleTimer = setTimeout(hideScreenControls, 1000); }
-function toggleFullscreen() { const sv = document.getElementById('view-screen'); if (!document.fullscreenElement) sv.requestFullscreen().catch(console.error); else document.exitFullscreen(); }
+function toggleFullscreen() { 
+    const sv = document.getElementById('view-screen'); 
+    if (!document.fullscreenElement) {
+        sv.requestFullscreen().catch(console.error); 
+    } else {
+        document.exitFullscreen().catch(console.error);
+    }
+}
 
 async function initAudio() { 
     await Tone.start(); 
@@ -279,7 +312,7 @@ async function initAudio() {
     drumAudio.load();
 }
 
-function refreshAll() { renderHelper(); renderCouple(); updateProgress(); document.getElementById('debug-local').innerText = `${submissions.size} 張`; checkAutoUnlockWinnerLoop(); }
+function refreshAll() { renderHelper(); renderCouple(); updateProgress(); document.getElementById('debug-local').innerText = `${submissions.size} 張`; checkAutoUnlockCeremony(); }
 
 function manualReconnect() { failedAttempts = 0; document.getElementById('btn-reconnect').classList.add('hidden'); document.getElementById('sys-status').innerText = "重新連線中..."; document.getElementById('sys-status').className = "font-bold text-yellow-600"; document.getElementById('status-dot').className = "w-2 h-2 bg-yellow-500 rounded-full animate-pulse"; fetchData(true); }
 
@@ -313,7 +346,7 @@ async function fetchData(isFirst = false) {
                 avatar: (existing && existing.avatar) || remote.avatar || getRandomAvatar(avatarSeed),
                 status: finalStatus,
                 isWinner: remote.isWinner !== undefined ? remote.isWinner : (existing ? existing.isWinner : false),
-                isFavorite: existing ? (existing.isFavorite || false) : false // 保留最愛狀態
+                isFavorite: existing ? (existing.isFavorite || false) : false
             };
             newSubmissions.set(uid, photoData);
 
@@ -322,7 +355,6 @@ async function fetchData(isFirst = false) {
             }
         });
 
-        // 即時通知 (8秒)
         if (!isFirst) {
             currentApprovedIds.forEach(id => {
                 if (!lastApprovedIds.has(id)) {
@@ -367,7 +399,7 @@ async function fetchData(isFirst = false) {
     } 
 }
 
-function resetSystem(){ if(confirm('❌ 警告：嚴重操作！\n\n這將清空【所有】照片與名單。\n確定要全部重置？')){ if(confirm('再次確認：真的要刪除所有資料嗎？')) { submissions.clear(); appState.winnersLocked=false; document.getElementById('btn-mode-winner').disabled=true; document.getElementById('btn-mode-winner').classList.add('opacity-30','cursor-not-allowed'); localStorage.removeItem(LOCAL_STORAGE_KEY); refreshAll(); setScreenMode('loop'); fetch(`${API_URL}/api/clear`, {method:'POST'}).catch(console.error); } } }
+function resetSystem(){ if(confirm('❌ 警告：嚴重操作！\n\n這將清空【所有】照片與名單。\n確定要全部重置？')){ if(confirm('再次確認：真的要刪除所有資料嗎？')) { submissions.clear(); appState.winnersLocked=false; winnersRevealedCount = 0; document.getElementById('btn-mode-ceremony').classList.add('btn-disabled'); document.getElementById('btn-mode-ceremony').disabled=true; document.getElementById('btn-mode-winner').disabled=true; document.getElementById('btn-mode-winner').classList.add('btn-disabled'); localStorage.removeItem(LOCAL_STORAGE_KEY); refreshAll(); setScreenMode('loop'); fetch(`${API_URL}/api/clear`, {method:'POST'}).catch(console.error); } } }
 
 function setHelperMode(m){ helperMode=m; document.getElementById('btn-helper-pending').className = m==='pending' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-slate-800" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white"; document.getElementById('btn-helper-trash').className = m==='trash' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-red-600 flex items-center gap-1" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white flex items-center gap-1"; renderHelper(); }
 
@@ -375,7 +407,6 @@ function renderHelper(){
     const g = document.getElementById('helper-grid-content'); g.innerHTML=''; 
     const list = Array.from(submissions.values()).filter(p => helperMode==='pending' ? p.status==='pending' : p.status==='rejected').sort((a,b) => b.timestamp - a.timestamp); 
     
-    // 更新 Pending 計數
     const pendingCount = Array.from(submissions.values()).filter(p => p.status === 'pending').length;
     const badge = document.getElementById('helper-badge');
     if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
@@ -395,7 +426,6 @@ async function updateStatus(photoKey, s){ const p = submissions.get(photoKey); i
 function updateProgress(){ const l = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); const c = {groom:0, bride:0, creative:0}; l.forEach(p => c[p.cat]++); ['groom','bride','creative'].forEach(k => { document.getElementById(`prog-${k}`).textContent = `${k==='groom'?'🤵':(k==='bride'?'👰':'💡')} ${c[k]}`; }); }
 function filterCouple(c){ coupleFilter = c; document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === c)); renderCouple(); }
 
-// 渲染新人決選列表 (新增愛心顯示)
 function renderCouple(){ 
     const g = document.getElementById('couple-grid-content'); g.innerHTML=''; 
     let list = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); 
@@ -418,17 +448,25 @@ function renderCouple(){
     if(w.length === 3 && !appState.winnersLocked){ btn.disabled=false; btn.className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg animate-pulse flex items-center gap-2 cursor-pointer"; btn.innerHTML='<span class="material-symbols-outlined">verified</span> 確認並鎖定'; } else if(appState.winnersLocked){ btn.disabled=true; btn.className="bg-slate-800 text-white/50 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; btn.innerHTML='<span class="material-symbols-outlined">lock</span> 名單已鎖定'; } else { btn.disabled=true; btn.className="bg-slate-200 text-slate-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; } 
 }
 
-function checkAutoUnlockWinnerLoop() {
-    const winners = Array.from(submissions.values()).filter(p => p.isWinner);
-    const btn = document.getElementById('btn-mode-winner');
-    // 自動解鎖：3位冠軍 或 已鎖定
-    if (winners.length >= 3 || appState.winnersLocked) {
+function checkAutoUnlockCeremony() {
+    const btn = document.getElementById('btn-mode-ceremony');
+    if (appState.winnersLocked) {
         btn.disabled = false;
-        btn.classList.remove('opacity-30', 'cursor-not-allowed');
+        btn.classList.remove('btn-disabled');
+    } else {
+        btn.disabled = true;
+        btn.classList.add('btn-disabled');
     }
 }
 
-// 新增：雙擊照片切換最愛 (Local Only，不用回傳後端)
+function checkAutoUnlockWinnerLoop() {
+    const btn = document.getElementById('btn-mode-winner');
+    if (winnersRevealedCount >= 3) {
+        btn.disabled = false;
+        btn.classList.remove('btn-disabled');
+    }
+}
+
 function toggleFavoriteFromLightbox() {
     const lb = document.getElementById('lightbox');
     const photoKey = lb.dataset.uid;
@@ -438,19 +476,17 @@ function toggleFavoriteFromLightbox() {
     if (p) {
         p.isFavorite = !p.isFavorite;
         submissions.set(photoKey, p);
-        saveToLocalCache(); // 儲存到本地
+        saveToLocalCache(); 
         
-        // 更新 UI
         const heartIcon = document.getElementById('lb-heart-icon');
         if (p.isFavorite) {
             heartIcon.classList.remove('hidden');
-            heartIcon.classList.add('heart-pop'); // 播放動畫
+            heartIcon.classList.add('heart-pop'); 
             setTimeout(() => heartIcon.classList.remove('heart-pop'), 400);
         } else {
             heartIcon.classList.add('hidden');
         }
         
-        // 重新渲染列表
         renderCouple();
     }
 }
@@ -477,7 +513,6 @@ function openLightbox(photoKey){
     catBadge.className = `inline-block px-4 py-1.5 rounded-full text-base font-bold text-white mb-2 shadow-lg ${categories[p.cat].lb}`; 
     document.getElementById('lb-user-display').innerText = p.uploader; 
     
-    // 顯示愛心狀態
     const heartIcon = document.getElementById('lb-heart-icon');
     if(p.isFavorite) heartIcon.classList.remove('hidden'); else heartIcon.classList.add('hidden');
     
@@ -508,7 +543,11 @@ function showToast(n){
 }
 
 function setScreenMode(m){ 
-    screenMode = m; const o = document.getElementById('intro-overlay'), i = document.getElementById('screen-img'), b = document.getElementById('screen-winner-trophy'); 
+    // 切換前先停止目前的輪播，避免多個 interval 同時運作
+    stopScreenLoop();
+    
+    screenMode = m; 
+    const o = document.getElementById('intro-overlay'), i = document.getElementById('screen-img'), b = document.getElementById('screen-winner-trophy'); 
     document.querySelectorAll('.screen-mode-btn').forEach(btn => { btn.classList.remove('active', 'bg-blue-600', 'bg-pink-600', 'bg-amber-500'); btn.classList.add('bg-white/10'); }); 
     document.getElementById('screen-mode-label').textContent = { loop: '輪播模式', ceremony: '頒獎典禮', winner_loop: '頒獎後輪播' }[m] || '輪播模式'; 
     
@@ -561,10 +600,8 @@ function updateScreen(){
                 img.style.transform="scale(1)"; 
             } 
         };
-        // 修正：若圖片載入失敗，保持黑畫面，不跳過
         img.onerror = () => {
             console.error("Image load failed:", p.url);
-            // 不做任何事，讓畫面停留在黑底
         };
     }, 500); 
 }
@@ -623,6 +660,10 @@ function revealSequence(cat){
             fireConfetti();
             setTimeout(fireConfetti, 800); 
             setTimeout(fireConfetti, 1600); 
+            
+            // 更新已揭曉數量並檢查是否開啟頒獎後輪播
+            winnersRevealedCount++;
+            checkAutoUnlockWinnerLoop();
         }, 500); 
     }, DRUM_DURATION); 
 }
@@ -648,7 +689,7 @@ function fireConfetti() {
 
 function openConfirmModal(){ ['groom','bride','creative'].forEach(c => { const w = Array.from(submissions.values()).find(x => x.isWinner && x.cat === c); if(w) { document.getElementById(`confirm-card-${c}`).innerHTML = `<div class="font-bold text-${categories[c].text.split('-')[1]}-800 mb-2">${categories[c].name}</div><div class="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center rounded-lg mb-2 shadow-inner overflow-hidden border"><img src="${w.url}" class="max-w-full max-h-full object-contain"></div><div class="font-bold text-slate-700">${w.uploader}</div>`; } }); document.getElementById('confirm-modal').classList.remove('hidden'); }
 function closeConfirmModal(){ document.getElementById('confirm-modal').classList.add('hidden'); }
-function finalizeWinners(){ appState.winnersLocked = true; saveToLocalCache(); closeConfirmModal(); refreshAll(); checkAutoUnlockWinnerLoop(); alert('✅ 名單已鎖定！\n\n請手動切換到「投影」頁面，選擇「頒獎典禮」或「頒獎後輪播」模式。'); }
+function finalizeWinners(){ appState.winnersLocked = true; saveToLocalCache(); closeConfirmModal(); refreshAll(); checkAutoUnlockCeremony(); checkAutoUnlockWinnerLoop(); alert('✅ 名單已鎖定！\n\n請手動切換到「投影」頁面，選擇「頒獎典禮」或「頒獎後輪播」模式。'); }
 
 function switchTab(t){ currentRole = t === 'couple' ? 'couple' : 'helper'; document.querySelectorAll('.view-section').forEach(e => e.classList.add('hidden')); const viewEl = document.getElementById('view-' + t); viewEl.classList.remove('hidden'); if(t !== 'screen') viewEl.classList.add('flex'); document.getElementById('main-header').style.display = t === 'screen' ? 'none' : 'flex'; ['helper', 'couple', 'screen'].forEach(tab => { const btn = document.getElementById('tab-' + tab); if (tab === t) { btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800', 'ring-1', 'ring-slate-200'); btn.classList.remove('text-slate-500', 'hover:text-slate-900'); } else { btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800', 'ring-1', 'ring-slate-200'); btn.classList.add('text-slate-500', 'hover:text-slate-900'); } }); if(t === 'screen') { updateScreen(); resetMouseIdleTimer(); } }
 
