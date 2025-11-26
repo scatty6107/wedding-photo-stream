@@ -19,14 +19,25 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .confetti { position: absolute; width: 12px; height: 12px; background-color: #f00; animation: fall linear forwards; z-index: 50; }
+        
+        /* 修正：層級改為 999 保證在最上層，增加陰影 */
+        .confetti { 
+            position: absolute; 
+            width: 15px; 
+            height: 15px; 
+            background-color: #f00; 
+            animation: fall linear forwards; 
+            z-index: 999; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
         @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+        
         .lightbox-backdrop { background-color: rgba(0, 0, 0, 0.95); }
         .lightbox-img { max-height: 70vh; max-width: 90vw; object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
         .screen-img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-        .blur-state { filter: blur(30px) brightness(0.5); transform: scale(1.1); transition: all 3s ease; } /* 延長模糊時間配合鼓聲 */
+        .blur-state { filter: blur(30px) brightness(0.5); transform: scale(1.1); transition: all 4s ease; } /* 配合5秒音效延長轉場 */
         .clear-state { filter: blur(0) brightness(1); transform: scale(1); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .toast-enter { transform: translateX(-100%); opacity: 0; } /* 改為從左側進入 */
+        .toast-enter { transform: translateX(-100%); opacity: 0; }
         .toast-active { transform: translateX(0); opacity: 1; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .toast-exit { transform: translateX(-100%); opacity: 0; transition: all 0.5s ease; }
         .new-tag { animation: pulse-red 2s infinite; }
@@ -36,9 +47,11 @@
         .screen-mode-btn.active { transform: scale(1.02); }
         .screen-controls-hidden .screen-controller, .screen-controls-hidden .screen-header { opacity: 0 !important; pointer-events: none !important; }
         .screen-controller, .screen-header { transition: opacity 0.3s ease; }
+        
         /* 16:9 照片框 */
         .photo-preview { aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
         .notification-badge { animation: bounce-badge 1s infinite; }
         @keyframes bounce-badge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     </style>
@@ -68,7 +81,7 @@
         <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26 更新：</strong><br>• 即時入圍通知 (8秒)<br>• 頒獎鼓聲與彩帶特效<br>• 16:9 寬螢幕檢視<br>• 30款全新賓客頭像</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26 決戰更新：</strong><br>• 支援 drum.mp3 頒獎音效<br>• 滿版彩帶特效 (修正層級)<br>• 16:9 寬螢幕檢視<br>• 即時入圍通知 (多機同步)</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -134,11 +147,11 @@
                 <div class="absolute top-8 right-8 z-30 hidden drop-shadow-xl animate-bounce" id="screen-winner-trophy"><span class="material-symbols-outlined text-yellow-400 text-9xl" style="text-shadow: 0 4px 20px rgba(0,0,0,0.9);">emoji_events</span></div>
                 
                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-30 hidden transition-opacity duration-500" id="intro-overlay"><div class="text-9xl mb-6 animate-bounce">🥁</div><h2 class="text-7xl md:text-9xl font-black text-white tracking-widest uppercase mb-4 drop-shadow-2xl text-center" id="intro-title">CATEGORY</h2><p class="text-white/60 text-3xl tracking-[0.5em] animate-pulse">WINNER REVEAL</p></div>
-                <div class="absolute bottom-16 left-16 bg-black/70 backdrop-blur-xl pl-8 pr-12 py-6 rounded-r-full border-l-8 border-white/40 flex items-center gap-6 shadow-2xl transition-all duration-700 opacity-0 translate-y-10 z-20 max-w-4xl" id="screen-info">
-                    <div class="relative shrink-0"><img class="w-32 h-32 rounded-full border-4 border-white shadow-xl" id="screen-avatar" src=""></div>
+                <div class="absolute bottom-16 left-16 bg-black/70 backdrop-blur-xl pl-10 pr-16 py-8 rounded-r-full border-l-8 border-white/40 flex items-center gap-8 shadow-2xl transition-all duration-700 opacity-0 translate-y-10 z-20 max-w-5xl" id="screen-info">
+                    <div class="relative shrink-0"><img class="w-40 h-40 rounded-full border-4 border-white shadow-xl" id="screen-avatar" src=""></div>
                     <div class="text-left text-white">
-                        <div class="flex items-center gap-2 mb-2"><span class="px-6 py-2 bg-white/30 text-white text-3xl rounded-full font-bold uppercase tracking-wider border border-white/20 shadow-lg" id="screen-cat-tag">CAT</span></div>
-                        <div class="font-black text-6xl tracking-wide leading-tight" id="screen-user">User Name</div>
+                        <div class="flex items-center gap-2 mb-3"><span class="px-8 py-3 bg-white/30 text-white text-5xl rounded-full font-bold uppercase tracking-wider border border-white/20 shadow-lg" id="screen-cat-tag">CAT</span></div>
+                        <div class="font-black text-7xl tracking-wide leading-tight" id="screen-user">User Name</div>
                     </div>
                 </div>
                 <div class="absolute top-20 left-10 flex flex-col gap-4 z-50 pointer-events-none" id="toast-container"></div>
@@ -170,17 +183,20 @@ const avatarStyles = [
 const API_URL = "https://fongde-wedding-backend.onrender.com";
 const LOCAL_STORAGE_KEY = 'wedding_photos_cache';
 
-let submissions = new Map(), currentRole = 'helper', helperMode = 'pending', coupleFilter = 'all', appState = { submissionsOpen: true, winnersLocked: false }, screenMode = 'loop', screenIndex = 0, playInterval = null, pollInterval = null, synth = null, drumSynth = null, cymbalSynth = null, mouseIdleTimer = null, isFullscreen = false;
+// 音效設定
+const drumAudio = new Audio('./drum.mp3'); 
+const DRUM_DURATION = 5000; // 5秒鼓聲
+
+let submissions = new Map(), currentRole = 'helper', helperMode = 'pending', coupleFilter = 'all', appState = { submissionsOpen: true, winnersLocked: false }, screenMode = 'loop', screenIndex = 0, playInterval = null, pollInterval = null, synth = null, mouseIdleTimer = null, isFullscreen = false;
 let backupFolderHandle = null, backupInterval = null, backedUpPhotos = new Set(), backedUpApproved = new Set();
 let isConnected = false;
 let failedAttempts = 0;
-let lastApprovedIds = new Set(); // 追蹤上次的入圍名單，用於判斷新入圍
+let lastApprovedIds = new Set(); 
 
 let lbSnapshotList = [];
 let lbSnapshotIndex = 0;
 
 function getRandomAvatar(seed) { 
-    // 讓 seed 更均勻分佈在 30 種風格中
     const hash = Math.abs(hashCode(seed || 'default')); 
     const style = avatarStyles[hash % avatarStyles.length];
     return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`; 
@@ -211,29 +227,7 @@ function toggleFullscreen() { const sv = document.getElementById('view-screen');
 async function initAudio() { 
     await Tone.start(); 
     synth = new Tone.PolySynth(Tone.Synth).toDestination(); synth.volume.value = -6;
-    // 鼓聲合成器
-    drumSynth = new Tone.MembraneSynth().toDestination();
-    drumSynth.volume.value = 0;
-    // 鈸聲合成器 (噪音)
-    cymbalSynth = new Tone.MetalSynth({
-        frequency: 200, envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
-        harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
-    }).toDestination();
-    cymbalSynth.volume.value = -6;
-}
-
-function playDrumRoll() {
-    if (!drumSynth) return;
-    const now = Tone.now();
-    // 模擬滾奏：快速連續的低音，頻率稍微變化
-    for(let i=0; i<30; i++) {
-        drumSynth.triggerAttackRelease("C2", "32n", now + i*0.1);
-    }
-    // 最後一擊
-    setTimeout(() => {
-        if(cymbalSynth) cymbalSynth.triggerAttackRelease("32n", Tone.now());
-        if(drumSynth) drumSynth.triggerAttackRelease("C1", "8n", Tone.now());
-    }, 3100);
+    drumAudio.load();
 }
 
 function refreshAll() { renderHelper(); renderCouple(); updateProgress(); document.getElementById('debug-local').innerText = `${submissions.size} 張`; checkAutoUnlockWinnerLoop(); }
@@ -262,7 +256,6 @@ async function fetchData(isFirst = false) {
             const avatarSeed = remote.odialog || remote.userId || uid;
             const existing = submissions.get(uid);
             
-            // 狀態同步 logic
             let finalStatus = remote.status || (existing ? existing.status : 'pending');
             
             const photoData = {
@@ -274,17 +267,15 @@ async function fetchData(isFirst = false) {
             };
             newSubmissions.set(uid, photoData);
 
-            // 追蹤所有入圍ID
             if (finalStatus === 'approved' || finalStatus === 'winner') {
                 currentApprovedIds.add(uid);
             }
         });
 
-        // 🔥 即時通知邏輯 (任何電腦都適用)
+        // 即時通知 (8秒)
         if (!isFirst) {
             currentApprovedIds.forEach(id => {
                 if (!lastApprovedIds.has(id)) {
-                    // 發現新入圍！
                     const p = newSubmissions.get(id);
                     if (p) showToast(p.uploader);
                 }
@@ -330,7 +321,6 @@ function resetSystem(){ if(confirm('❌ 警告：嚴重操作！\n\n這將清空
 
 function setHelperMode(m){ helperMode=m; document.getElementById('btn-helper-pending').className = m==='pending' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-slate-800" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white"; document.getElementById('btn-helper-trash').className = m==='trash' ? "px-3 py-1 text-xs font-bold rounded shadow bg-white text-red-600 flex items-center gap-1" : "px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-white flex items-center gap-1"; renderHelper(); }
 
-// 渲染小幫手 (更新待審核數量Badge)
 function renderHelper(){ 
     const g = document.getElementById('helper-grid-content'); g.innerHTML=''; 
     const list = Array.from(submissions.values()).filter(p => helperMode==='pending' ? p.status==='pending' : p.status==='rejected').sort((a,b) => b.timestamp - a.timestamp); 
@@ -377,11 +367,10 @@ function renderCouple(){
     if(w.length === 3 && !appState.winnersLocked){ btn.disabled=false; btn.className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg animate-pulse flex items-center gap-2 cursor-pointer"; btn.innerHTML='<span class="material-symbols-outlined">verified</span> 確認並鎖定'; } else if(appState.winnersLocked){ btn.disabled=true; btn.className="bg-slate-800 text-white/50 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; btn.innerHTML='<span class="material-symbols-outlined">lock</span> 名單已鎖定'; } else { btn.disabled=true; btn.className="bg-slate-200 text-slate-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-not-allowed"; } 
 }
 
-// 自動偵測是否該開啟「頒獎後輪播」按鈕
 function checkAutoUnlockWinnerLoop() {
     const winners = Array.from(submissions.values()).filter(p => p.isWinner);
     const btn = document.getElementById('btn-mode-winner');
-    // 只要有 3 位冠軍，或是 appState 鎖定，就解鎖按鈕
+    // 自動解鎖：3位冠軍 或 已鎖定
     if (winners.length >= 3 || appState.winnersLocked) {
         btn.disabled = false;
         btn.classList.remove('opacity-30', 'cursor-not-allowed');
@@ -410,14 +399,10 @@ function closeLightbox(e, force){ if(force || (e && e.target.id === 'lightbox'))
 function showToast(n){ 
     const c = document.getElementById('toast-container'); 
     const d = document.createElement('div'); 
-    // 從左側滑入的樣式
     d.className = 'bg-white/90 backdrop-blur-md px-6 py-4 rounded-r-full rounded-tl-3xl shadow-2xl border-l-8 border-pink-500 flex items-center gap-4 toast-enter min-w-[300px] z-50'; 
     d.innerHTML = `<span class="material-symbols-outlined text-pink-500 text-4xl animate-bounce">celebration</span> <div><div class="text-xs text-slate-500 font-black uppercase tracking-widest mb-1">FINALIST</div><div class="font-black text-2xl text-slate-900">${n} 入圍！</div></div>`; 
     c.appendChild(d); 
-    
     requestAnimationFrame(() => d.className = 'bg-white/90 backdrop-blur-md px-6 py-4 rounded-r-full rounded-tl-3xl shadow-2xl border-l-8 border-pink-500 flex items-center gap-4 toast-active min-w-[300px] z-50'); 
-    
-    // 延長顯示時間至 8 秒
     setTimeout(() => { 
         d.className = 'bg-white/90 backdrop-blur-md px-6 py-4 rounded-r-full rounded-tl-3xl shadow-2xl border-l-8 border-pink-500 flex items-center gap-4 toast-exit min-w-[300px] z-50'; 
         setTimeout(() => d.remove(), 500); 
@@ -440,14 +425,13 @@ function setScreenMode(m){
         stopScreenLoop(); i.style.opacity = 0.2; o.classList.remove('hidden'); document.getElementById('intro-title').innerText="頒獎典禮"; 
     } else { 
         o.classList.add('hidden'); 
-        if (m === 'loop') b.classList.add('hidden'); // 輪播模式隱藏獎盃
+        if (m === 'loop') b.classList.add('hidden'); 
         i.className='screen-img clear-state transition-opacity duration-500'; i.style.opacity=1; startScreenLoop(); 
     } 
 }
 
 function updateScreen(){ 
     let list; 
-    // 修正：頒獎後輪播包含「所有入圍者」以及「冠軍」
     if(screenMode === 'winner_loop') { list = Array.from(submissions.values()).filter(p => p.status === 'approved' || p.isWinner); } 
     else { list = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner').sort((a,b) => b.timestamp - a.timestamp); } 
     
@@ -467,7 +451,6 @@ function updateScreen(){
         document.getElementById('screen-avatar').src = p.avatar || getRandomAvatar(photoKey); 
         img.onload = () => { 
             img.style.opacity=1; n.style.opacity=1; n.style.transform='translate(0,0)'; 
-            // 只有在「頒獎後輪播」且是冠軍時顯示獎盃
             if(screenMode === 'winner_loop' && p.isWinner) { 
                 trophy.classList.remove('hidden'); 
                 img.style.transform="scale(1.02)"; 
@@ -489,29 +472,29 @@ function revealSequence(cat){
     const w = Array.from(submissions.values()).find(p => p.isWinner && p.cat === cat); 
     if(!w) { alert('請先在「新人」頁面選擇此類別的冠軍！'); return; }
     
-    // 播放鼓聲
-    playDrumRoll();
+    drumAudio.currentTime = 0;
+    drumAudio.play().catch(e => console.log("音效播放失敗(需與網頁互動):", e));
 
     const photoKey = w.odialog || w.userId; 
     const img = document.getElementById('screen-img'); 
     const o = document.getElementById('intro-overlay'); 
+    const badge = document.getElementById('screen-winner-trophy');
+    
     document.getElementById('screen-info').style.opacity=0; 
-    document.getElementById('screen-winner-trophy').classList.add('hidden'); 
+    if(badge) badge.classList.add('hidden'); 
     
     img.src = w.url; 
-    img.className = 'screen-img blur-state'; // 模糊狀態，等待鼓聲
+    img.className = 'screen-img blur-state'; 
     img.style.opacity = 0.5; 
     
     o.classList.remove('hidden'); 
     document.getElementById('intro-title').innerText = categories[cat].name; 
     
-    // 配合 3秒 鼓聲後揭曉
     setTimeout(() => { 
         o.classList.add('hidden'); 
         img.className = 'screen-img clear-state'; 
         img.style.opacity = 1; 
         
-        // 播放音樂
         if(synth) { 
             const now = Tone.now(); 
             synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now); 
@@ -519,7 +502,7 @@ function revealSequence(cat){
         } 
         
         const f = document.createElement('div'); 
-        f.className = 'absolute inset-0 bg-white z-50'; 
+        f.className = 'absolute inset-0 bg-white z-[60]'; 
         document.getElementById('view-screen').appendChild(f); 
         f.animate([{opacity:1}, {opacity:0}], {duration:1000}).onfinish = () => f.remove(); 
         
@@ -528,25 +511,30 @@ function revealSequence(cat){
             document.getElementById('screen-cat-tag').innerText = categories[cat].name; 
             document.getElementById('screen-avatar').src = w.avatar || getRandomAvatar(photoKey); 
             document.getElementById('screen-info').style.opacity = 1; 
-            document.getElementById('screen-winner-trophy').classList.remove('hidden'); 
+            if(badge) badge.classList.remove('hidden'); 
             
-            // 撒花特效 (增強版)
             fireConfetti();
-            setTimeout(fireConfetti, 1000); // 第二波
-        }, 800); 
-    }, 3100);
+            setTimeout(fireConfetti, 800); 
+            setTimeout(fireConfetti, 1600); 
+        }, 500); 
+    }, DRUM_DURATION); 
 }
 
 function fireConfetti() {
-    for(let k=0; k<100; k++){ 
+    const screen = document.getElementById('view-screen');
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffd700'];
+    
+    for(let k=0; k<150; k++){ 
         const c = document.createElement('div'); 
         c.className = 'confetti'; 
         c.style.left = Math.random() * 100 + 'vw'; 
-        c.style.backgroundColor = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'][Math.floor(Math.random() * 7)]; 
-        c.style.width = Math.random() * 10 + 5 + 'px'; // 隨機大小
-        c.style.height = Math.random() * 20 + 10 + 'px'; // 長條狀
-        c.style.animationDuration = Math.random() * 2 + 2 + 's'; 
-        document.getElementById('view-screen').appendChild(c); 
+        c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; 
+        const size = Math.random() * 10 + 8 + 'px';
+        c.style.width = size;
+        c.style.height = Math.random() > 0.5 ? size : (Math.random() * 20 + 10 + 'px'); 
+        c.style.animationDuration = Math.random() * 2 + 1.5 + 's'; 
+        c.style.animationDelay = Math.random() * 0.5 + 's';
+        screen.appendChild(c); 
         setTimeout(() => c.remove(), 4000); 
     } 
 }
