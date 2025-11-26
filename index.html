@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V26 - 12/6 決戰版</title>
+    <title>婚禮神攝手 V26.1 - 12/6 決戰修正版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -35,7 +35,7 @@
         .lightbox-backdrop { background-color: rgba(0, 0, 0, 0.95); }
         .lightbox-img { max-height: 70vh; max-width: 90vw; object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
         .screen-img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-        .blur-state { filter: blur(30px) brightness(0.5); transform: scale(1.1); transition: all 4s ease; } /* 配合5秒音效延長轉場 */
+        .blur-state { filter: blur(30px) brightness(0.5); transform: scale(1.1); transition: all 4s ease; } 
         .clear-state { filter: blur(0) brightness(1); transform: scale(1); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .toast-enter { transform: translateX(-100%); opacity: 0; }
         .toast-active { transform: translateX(0); opacity: 1; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -78,10 +78,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.1</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26 決戰更新：</strong><br>• 支援 drum.mp3 頒獎音效<br>• 滿版彩帶特效 (修正層級)<br>• 16:9 寬螢幕檢視<br>• 即時入圍通知 (多機同步)</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.1 修正：</strong><br>• 修復輪播黑畫面問題<br>• 確保每位賓客頭像正常<br>• 支援 drum.mp3 頒獎音效</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -109,7 +109,7 @@
     <div class="flex items-center gap-4">
         <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
         <div>
-            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26</span></h1>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.1</span></h1>
             <div class="text-xs text-slate-500 flex items-center gap-1">
                 <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
                 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
@@ -169,15 +169,14 @@
 <script>
 const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 'text-blue-600', lb: 'bg-blue-600' }, bride: { name: '最美新娘賞', bg: 'bg-pink-100', text: 'text-pink-600', lb: 'bg-pink-600' }, creative: { name: '最佳創意賞', bg: 'bg-amber-100', text: 'text-amber-600', lb: 'bg-amber-600' } };
 
-// 擴充至 30 種 Avatar 風格
+// 🛠️ 修正：使用官方支援的 28 種有效風格，移除無效名稱
 const avatarStyles = [
     'adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral',
-    'big-ears', 'big-ears-neutral', 'big-smile', 'bottts',
-    'croodles', 'croodles-neutral', 'fun-emoji', 'lorelei', 
-    'micah', 'miniavs', 'notionists', 'open-peeps',
-    'personas', 'pixel-art', 'pixel-art-neutral', 'shapes',
-    'thumbs', 'dylan', 'felix', 'glass',
-    'initials', 'jack', 'jane', 'jess', 'jocelyn', 'jon'
+    'big-ears', 'big-ears-neutral', 'big-smile', 'bottts', 'bottts-neutral',
+    'croodles', 'croodles-neutral', 'fun-emoji', 'icons', 'identicon',
+    'initials', 'lorelei', 'lorelei-neutral', 'micah', 'miniavs',
+    'notionists', 'notionists-neutral', 'open-peeps', 'personas',
+    'pixel-art', 'pixel-art-neutral', 'rings', 'shapes', 'thumbs'
 ];
 
 const API_URL = "https://fongde-wedding-backend.onrender.com";
@@ -185,7 +184,7 @@ const LOCAL_STORAGE_KEY = 'wedding_photos_cache';
 
 // 音效設定
 const drumAudio = new Audio('./drum.mp3'); 
-const DRUM_DURATION = 4000; // 5秒鼓聲
+const DRUM_DURATION = 4000; // 4秒鼓聲
 
 let submissions = new Map(), currentRole = 'helper', helperMode = 'pending', coupleFilter = 'all', appState = { submissionsOpen: true, winnersLocked: false }, screenMode = 'loop', screenIndex = 0, playInterval = null, pollInterval = null, synth = null, mouseIdleTimer = null, isFullscreen = false;
 let backupFolderHandle = null, backupInterval = null, backedUpPhotos = new Set(), backedUpApproved = new Set();
@@ -197,9 +196,14 @@ let lbSnapshotList = [];
 let lbSnapshotIndex = 0;
 
 function getRandomAvatar(seed) { 
+    // 🎨 增加隨機性：確保種子均勻分佈，並加上隨機背景色
     const hash = Math.abs(hashCode(seed || 'default')); 
     const style = avatarStyles[hash % avatarStyles.length];
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`; 
+    // 隨機背景色組合
+    const bgColors = ['b6e3f4','c0aede','d1d4f9','ffd5dc','ffdfbf','fdcb9e','d1fae5','fef3c7'];
+    const randomBg = bgColors[hash % bgColors.length];
+    
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=${randomBg}`; 
 }
 function hashCode(str) { let hash = 0; for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash = hash & hash; } return hash; }
 
@@ -448,7 +452,13 @@ function updateScreen(){
         img.src = p.url; 
         document.getElementById('screen-cat-tag').innerText = categories[p.cat].name; 
         document.getElementById('screen-user').innerText = p.uploader; 
-        document.getElementById('screen-avatar').src = p.avatar || getRandomAvatar(photoKey); 
+        // 🛠️ 修正：確保頭像存在，如果載入失敗則使用隨機頭像
+        const avatarUrl = p.avatar || getRandomAvatar(photoKey);
+        const avatarImg = document.getElementById('screen-avatar');
+        avatarImg.src = avatarUrl;
+        avatarImg.onerror = () => { avatarImg.src = getRandomAvatar(photoKey + 'fallback'); }; // 頭像載入失敗時的備援
+
+        // 🛠️ 修正：圖片載入失敗時的處理 (防止黑畫面)
         img.onload = () => { 
             img.style.opacity=1; n.style.opacity=1; n.style.transform='translate(0,0)'; 
             if(screenMode === 'winner_loop' && p.isWinner) { 
@@ -458,7 +468,13 @@ function updateScreen(){
                 trophy.classList.add('hidden'); 
                 img.style.transform="scale(1)"; 
             } 
-        }; 
+        };
+        img.onerror = () => {
+            // 如果圖片真的掛了，至少顯示個東西或跳過，不要全黑
+            console.error("Image load failed:", p.url);
+            // 這裡可以選擇跳下一張，或顯示替代圖
+            screenNext(); 
+        };
     }, 500); 
 }
 
