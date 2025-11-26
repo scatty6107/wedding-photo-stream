@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V26.1 - 12/6 決戰修正版</title>
+    <title>婚禮神攝手 V26.2 - 12/6 決戰修正版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -54,22 +54,34 @@
         
         .notification-badge { animation: bounce-badge 1s infinite; }
         @keyframes bounce-badge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        /* 愛心動畫 */
+        .heart-pop { animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes heartPop { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden text-slate-800">
 
 <div class="fixed inset-0 z-[100] lightbox-backdrop hidden flex flex-col items-center justify-center opacity-0 transition-opacity duration-300" id="lightbox" onclick="closeLightbox(event)">
-    <div class="absolute top-8 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none">
-        <div class="bg-black/70 backdrop-blur-xl rounded-2xl px-8 py-4 border border-white/20 shadow-2xl">
-            <span class="inline-block px-4 py-1.5 rounded-full text-base font-bold text-white mb-2 shadow-lg" id="lb-cat-badge">Category</span>
-            <div class="font-black text-3xl text-white tracking-wide drop-shadow-lg" id="lb-user-display">User Name</div>
+    <div class="absolute top-8 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none w-full max-w-lg px-4">
+        <div class="bg-black/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-white/20 shadow-2xl flex flex-col items-center relative">
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-bold text-white mb-1 shadow-lg" id="lb-cat-badge">Category</span>
+            <div class="flex items-center gap-3">
+                <div class="font-black text-2xl text-white tracking-wide drop-shadow-lg" id="lb-user-display">User Name</div>
+                <!-- 愛心標記 (燈箱內) -->
+                <span class="material-symbols-outlined text-pink-500 text-3xl hidden heart-pop drop-shadow-lg" id="lb-heart-icon">favorite</span>
+            </div>
+            <div class="text-white/50 text-xs mt-1 font-mono">(雙擊照片加入最愛)</div>
         </div>
     </div>
     <button class="absolute top-4 right-4 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition z-30" onclick="closeLightbox(null, true)"><span class="material-symbols-outlined text-3xl">close</span></button>
     <div class="relative flex-1 w-full h-full flex items-center justify-center p-4 pt-28" onclick="event.stopPropagation()">
         <button class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-white hover:bg-black/30 rounded-full transition z-20" onclick="lbNav(-1)"><span class="material-symbols-outlined text-4xl">chevron_left</span></button>
         <button class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-white hover:bg-black/30 rounded-full transition z-20" onclick="lbNav(1)"><span class="material-symbols-outlined text-4xl">chevron_right</span></button>
-        <img class="lightbox-img rounded-lg" id="lb-img" src="">
+        
+        <!-- 照片本體 (加入雙擊事件) -->
+        <img class="lightbox-img rounded-lg cursor-pointer transition active:scale-95" id="lb-img" src="" ondblclick="toggleFavoriteFromLightbox()">
+        
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300 z-30" id="lb-feedback"><div class="bg-black/60 p-8 rounded-full backdrop-blur-md shadow-2xl"><span class="material-symbols-outlined text-8xl text-white" id="lb-feedback-icon">check</span></div></div>
     </div>
     <div class="absolute bottom-8 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-8 py-4 flex gap-4 pointer-events-auto shadow-2xl z-[110]" id="lb-actions"></div>
@@ -78,10 +90,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.1</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.2</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.1 修正：</strong><br>• 修復輪播黑畫面問題<br>• 確保每位賓客頭像正常<br>• 支援 drum.mp3 頒獎音效</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.2 修正：</strong><br>• 輪播頭像尺寸還原<br>• 新增「雙擊愛心」挑選功能<br>• 修復頭像顯示 UA/UH 問題</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -109,7 +121,7 @@
     <div class="flex items-center gap-4">
         <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
         <div>
-            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.1</span></h1>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.2</span></h1>
             <div class="text-xs text-slate-500 flex items-center gap-1">
                 <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
                 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
@@ -147,11 +159,12 @@
                 <div class="absolute top-8 right-8 z-30 hidden drop-shadow-xl animate-bounce" id="screen-winner-trophy"><span class="material-symbols-outlined text-yellow-400 text-9xl" style="text-shadow: 0 4px 20px rgba(0,0,0,0.9);">emoji_events</span></div>
                 
                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-30 hidden transition-opacity duration-500" id="intro-overlay"><div class="text-9xl mb-6 animate-bounce">🥁</div><h2 class="text-7xl md:text-9xl font-black text-white tracking-widest uppercase mb-4 drop-shadow-2xl text-center" id="intro-title">CATEGORY</h2><p class="text-white/60 text-3xl tracking-[0.5em] animate-pulse">WINNER REVEAL</p></div>
-                <div class="absolute bottom-16 left-16 bg-black/70 backdrop-blur-xl pl-10 pr-16 py-8 rounded-r-full border-l-8 border-white/40 flex items-center gap-8 shadow-2xl transition-all duration-700 opacity-0 translate-y-10 z-20 max-w-5xl" id="screen-info">
-                    <div class="relative shrink-0"><img class="w-40 h-40 rounded-full border-4 border-white shadow-xl" id="screen-avatar" src=""></div>
+                <!-- 修正：頭像縮回正常尺寸 (w-32 h-32)，字體也稍微縮小回原本的平衡 -->
+                <div class="absolute bottom-16 left-16 bg-black/70 backdrop-blur-xl pl-8 pr-12 py-6 rounded-r-full border-l-8 border-white/40 flex items-center gap-6 shadow-2xl transition-all duration-700 opacity-0 translate-y-10 z-20 max-w-4xl" id="screen-info">
+                    <div class="relative shrink-0"><img class="w-32 h-32 rounded-full border-4 border-white shadow-xl" id="screen-avatar" src=""></div>
                     <div class="text-left text-white">
-                        <div class="flex items-center gap-2 mb-3"><span class="px-8 py-3 bg-white/30 text-white text-5xl rounded-full font-bold uppercase tracking-wider border border-white/20 shadow-lg" id="screen-cat-tag">CAT</span></div>
-                        <div class="font-black text-7xl tracking-wide leading-tight" id="screen-user">User Name</div>
+                        <div class="flex items-center gap-2 mb-2"><span class="px-6 py-2 bg-white/30 text-white text-3xl rounded-full font-bold uppercase tracking-wider border border-white/20 shadow-lg" id="screen-cat-tag">CAT</span></div>
+                        <div class="font-black text-6xl tracking-wide leading-tight" id="screen-user">User Name</div>
                     </div>
                 </div>
                 <div class="absolute top-20 left-10 flex flex-col gap-4 z-50 pointer-events-none" id="toast-container"></div>
@@ -169,14 +182,14 @@
 <script>
 const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 'text-blue-600', lb: 'bg-blue-600' }, bride: { name: '最美新娘賞', bg: 'bg-pink-100', text: 'text-pink-600', lb: 'bg-pink-600' }, creative: { name: '最佳創意賞', bg: 'bg-amber-100', text: 'text-amber-600', lb: 'bg-amber-600' } };
 
-// 🛠️ 修正：使用官方支援的 28 種有效風格，移除無效名稱
+// 修正：移除會產生文字頭像(initials)的風格，確保都是可愛圖案
 const avatarStyles = [
     'adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral',
     'big-ears', 'big-ears-neutral', 'big-smile', 'bottts', 'bottts-neutral',
-    'croodles', 'croodles-neutral', 'fun-emoji', 'icons', 'identicon',
-    'initials', 'lorelei', 'lorelei-neutral', 'micah', 'miniavs',
-    'notionists', 'notionists-neutral', 'open-peeps', 'personas',
-    'pixel-art', 'pixel-art-neutral', 'rings', 'shapes', 'thumbs'
+    'croodles', 'croodles-neutral', 'fun-emoji', 'icons', 'lorelei', 
+    'lorelei-neutral', 'micah', 'miniavs', 'notionists', 'notionists-neutral', 
+    'open-peeps', 'personas', 'pixel-art', 'pixel-art-neutral', 'rings', 
+    'shapes', 'thumbs'
 ];
 
 const API_URL = "https://fongde-wedding-backend.onrender.com";
@@ -196,10 +209,8 @@ let lbSnapshotList = [];
 let lbSnapshotIndex = 0;
 
 function getRandomAvatar(seed) { 
-    // 🎨 增加隨機性：確保種子均勻分佈，並加上隨機背景色
     const hash = Math.abs(hashCode(seed || 'default')); 
     const style = avatarStyles[hash % avatarStyles.length];
-    // 隨機背景色組合
     const bgColors = ['b6e3f4','c0aede','d1d4f9','ffd5dc','ffdfbf','fdcb9e','d1fae5','fef3c7'];
     const randomBg = bgColors[hash % bgColors.length];
     
@@ -267,7 +278,8 @@ async function fetchData(isFirst = false) {
                 odialog: uid,
                 avatar: (existing && existing.avatar) || remote.avatar || getRandomAvatar(avatarSeed),
                 status: finalStatus,
-                isWinner: remote.isWinner !== undefined ? remote.isWinner : (existing ? existing.isWinner : false)
+                isWinner: remote.isWinner !== undefined ? remote.isWinner : (existing ? existing.isWinner : false),
+                isFavorite: existing ? (existing.isFavorite || false) : false // 保留最愛狀態
             };
             newSubmissions.set(uid, photoData);
 
@@ -290,7 +302,7 @@ async function fetchData(isFirst = false) {
         const hasChanges = newSubmissions.size !== submissions.size || 
             Array.from(newSubmissions.entries()).some(([k, v]) => {
                 const old = submissions.get(k);
-                return !old || old.status !== v.status || old.isWinner !== v.isWinner || old.timestamp !== v.timestamp;
+                return !old || old.status !== v.status || old.isWinner !== v.isWinner || old.timestamp !== v.timestamp || old.isFavorite !== v.isFavorite;
             });
         
         submissions = newSubmissions;
@@ -349,6 +361,7 @@ async function updateStatus(photoKey, s){ const p = submissions.get(photoKey); i
 function updateProgress(){ const l = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); const c = {groom:0, bride:0, creative:0}; l.forEach(p => c[p.cat]++); ['groom','bride','creative'].forEach(k => { document.getElementById(`prog-${k}`).textContent = `${k==='groom'?'🤵':(k==='bride'?'👰':'💡')} ${c[k]}`; }); }
 function filterCouple(c){ coupleFilter = c; document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === c)); renderCouple(); }
 
+// 渲染新人決選列表 (新增愛心顯示)
 function renderCouple(){ 
     const g = document.getElementById('couple-grid-content'); g.innerHTML=''; 
     let list = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner'); 
@@ -359,7 +372,7 @@ function renderCouple(){
         const div = document.createElement('div'); 
         div.className = `rounded-xl overflow-hidden relative cursor-pointer group bg-slate-100 shadow-sm border ${p.isWinner?'ring-4 ring-pink-500 z-10':''}`; 
         div.onclick = () => openLightbox(photoKey); 
-        div.innerHTML = `<div class="photo-preview relative"><img src="${p.url}" class="object-contain">${p.isWinner?'<div class="absolute inset-0 bg-pink-500/20 flex items-center justify-center pointer-events-none"><span class="material-symbols-outlined text-white text-5xl drop-shadow-lg">trophy</span></div>':''}</div><div class="p-2 bg-white flex justify-between text-xs font-bold text-slate-600 border-t"><span>${categories[p.cat].name}</span> <span class="truncate max-w-[80px]">${p.uploader}</span></div>`; 
+        div.innerHTML = `<div class="photo-preview relative"><img src="${p.url}" class="object-contain">${p.isWinner?'<div class="absolute inset-0 bg-pink-500/20 flex items-center justify-center pointer-events-none"><span class="material-symbols-outlined text-white text-5xl drop-shadow-lg">trophy</span></div>':''}</div><div class="p-2 bg-white flex justify-between text-xs font-bold text-slate-600 border-t"><span>${categories[p.cat].name}</span> <div class="flex items-center gap-1"><span class="truncate max-w-[60px]">${p.uploader}</span> ${p.isFavorite ? '<span class="material-symbols-outlined text-pink-500 text-sm">favorite</span>' : ''}</div></div>`; 
         g.appendChild(div); 
     }); 
     const w = Array.from(submissions.values()).filter(p => p.isWinner); 
@@ -381,6 +394,33 @@ function checkAutoUnlockWinnerLoop() {
     }
 }
 
+// 新增：雙擊照片切換最愛 (Local Only，不用回傳後端)
+function toggleFavoriteFromLightbox() {
+    const lb = document.getElementById('lightbox');
+    const photoKey = lb.dataset.uid;
+    if (!photoKey) return;
+    
+    const p = submissions.get(photoKey);
+    if (p) {
+        p.isFavorite = !p.isFavorite;
+        submissions.set(photoKey, p);
+        saveToLocalCache(); // 儲存到本地
+        
+        // 更新 UI
+        const heartIcon = document.getElementById('lb-heart-icon');
+        if (p.isFavorite) {
+            heartIcon.classList.remove('hidden');
+            heartIcon.classList.add('heart-pop'); // 播放動畫
+            setTimeout(() => heartIcon.classList.remove('heart-pop'), 400);
+        } else {
+            heartIcon.classList.add('hidden');
+        }
+        
+        // 重新渲染列表
+        renderCouple();
+    }
+}
+
 async function toggleWinner(photoKey){ 
     if(appState.winnersLocked) return; const p = submissions.get(photoKey); if(!p) return; 
     const newWinnerState = !p.isWinner;
@@ -392,7 +432,27 @@ async function toggleWinner(photoKey){
 async function returnToPending(photoKey) { const p = submissions.get(photoKey); if(p) { p.status = 'pending'; p.isWinner = false; submissions.set(photoKey, p); saveToLocalCache(); refreshAll(); closeLightbox(null, true); try { await fetch(`${API_URL}/api/photos/${photoKey}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'pending', isWinner: false }) }); } catch(e) { console.error('退回初選同步失敗', e); } } }
 
 function getLightboxList(){ if(currentRole === 'helper') return Array.from(submissions.values()).filter(p => helperMode==='pending'?p.status==='pending':p.status==='rejected').sort((a,b)=>b.timestamp-a.timestamp); else { let l = Array.from(submissions.values()).filter(p => p.status==='approved' || p.status==='winner').sort((a,b)=>b.timestamp-a.timestamp); if(coupleFilter !== 'all') l = l.filter(p => p.cat === coupleFilter); return l; } }
-function openLightbox(photoKey){ const p = submissions.get(photoKey); if(!p) return; lbSnapshotList = getLightboxList().map(x => x.odialog || x.userId); lbSnapshotIndex = lbSnapshotList.indexOf(photoKey); if(lbSnapshotIndex === -1) lbSnapshotIndex = 0; const lb = document.getElementById('lightbox'); document.getElementById('lb-img').src = p.url; const catBadge = document.getElementById('lb-cat-badge'); catBadge.innerText = categories[p.cat].name; catBadge.className = `inline-block px-4 py-1.5 rounded-full text-base font-bold text-white mb-2 shadow-lg ${categories[p.cat].lb}`; document.getElementById('lb-user-display').innerText = p.uploader; document.getElementById('lb-feedback').classList.add('opacity-0'); renderLbActions(p); lb.classList.remove('hidden'); lb.dataset.uid = photoKey; requestAnimationFrame(() => lb.classList.remove('opacity-0')); }
+function openLightbox(photoKey){ 
+    const p = submissions.get(photoKey); if(!p) return; 
+    lbSnapshotList = getLightboxList().map(x => x.odialog || x.userId); 
+    lbSnapshotIndex = lbSnapshotList.indexOf(photoKey); if(lbSnapshotIndex === -1) lbSnapshotIndex = 0; 
+    const lb = document.getElementById('lightbox'); 
+    document.getElementById('lb-img').src = p.url; 
+    const catBadge = document.getElementById('lb-cat-badge'); 
+    catBadge.innerText = categories[p.cat].name; 
+    catBadge.className = `inline-block px-4 py-1.5 rounded-full text-base font-bold text-white mb-2 shadow-lg ${categories[p.cat].lb}`; 
+    document.getElementById('lb-user-display').innerText = p.uploader; 
+    
+    // 顯示愛心狀態
+    const heartIcon = document.getElementById('lb-heart-icon');
+    if(p.isFavorite) heartIcon.classList.remove('hidden'); else heartIcon.classList.add('hidden');
+    
+    document.getElementById('lb-feedback').classList.add('opacity-0'); 
+    renderLbActions(p); 
+    lb.classList.remove('hidden'); 
+    lb.dataset.uid = photoKey; 
+    requestAnimationFrame(() => lb.classList.remove('opacity-0')); 
+}
 function renderLbActions(p){ const d = document.getElementById('lb-actions'); const photoKey = p.odialog || p.userId; if(currentRole === 'helper') { if(helperMode === 'pending') { d.innerHTML = `<button onclick="event.stopPropagation(); lbDecision('${photoKey}','rejected')" class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-400 text-white shadow-xl flex items-center justify-center transition hover:scale-110"><span class="material-symbols-outlined text-3xl">close</span></button><button onclick="event.stopPropagation(); lbDecision('${photoKey}','approved')" class="w-16 h-16 rounded-full bg-green-500 hover:bg-green-400 text-white shadow-xl flex items-center justify-center transition hover:scale-110"><span class="material-symbols-outlined text-3xl">check</span></button>`; } else { d.innerHTML = `<button onclick="event.stopPropagation(); lbDecision('${photoKey}','pending')" class="px-6 py-2 rounded-full bg-blue-500 text-white font-bold shadow">還原</button>`; } } else { if(appState.winnersLocked) { d.innerHTML = `<span class="text-white font-bold">已鎖定</span>`; } else { let btns = `<button onclick="event.stopPropagation(); returnToPending('${photoKey}')" class="px-5 py-3 rounded-full bg-slate-500 hover:bg-slate-400 text-white font-bold shadow-lg flex items-center gap-2"><span class="material-symbols-outlined">undo</span> 退回初選</button>`; btns += p.isWinner ? `<button onclick="event.stopPropagation(); toggleWinner('${photoKey}');openLightbox('${photoKey}')" class="px-6 py-3 rounded-full bg-yellow-400 text-black font-bold shadow-lg flex items-center gap-2"><span class="material-symbols-outlined">trophy</span> 取消冠軍</button>` : `<button onclick="event.stopPropagation(); toggleWinner('${photoKey}');openLightbox('${photoKey}')" class="px-6 py-3 rounded-full bg-white text-pink-600 font-bold shadow-lg flex items-center gap-2"><span class="material-symbols-outlined">trophy</span> 選為冠軍</button>`; d.innerHTML = btns; } } }
 function lbDecision(photoKey, s){ document.getElementById('lb-feedback-icon').innerText = s==='approved'?'check':(s==='pending'?'restore':'close'); document.getElementById('lb-feedback').classList.remove('opacity-0'); updateStatus(photoKey, s); if(currentRole === 'helper' && helperMode === 'pending') { setTimeout(() => { lbSnapshotIndex++; if(lbSnapshotIndex < lbSnapshotList.length) { const nextKey = lbSnapshotList[lbSnapshotIndex]; const nextPhoto = submissions.get(nextKey); if(nextPhoto && nextPhoto.status === 'pending') { openLightboxByKey(nextKey); } else { findNextPendingInSnapshot(); } } else { closeLightbox(null, true); } }, 500); } else setTimeout(() => closeLightbox(null, true), 500); }
 function findNextPendingInSnapshot() { while(lbSnapshotIndex < lbSnapshotList.length) { const key = lbSnapshotList[lbSnapshotIndex]; const photo = submissions.get(key); if(photo && photo.status === 'pending') { openLightboxByKey(key); return; } lbSnapshotIndex++; } closeLightbox(null, true); }
@@ -452,13 +512,11 @@ function updateScreen(){
         img.src = p.url; 
         document.getElementById('screen-cat-tag').innerText = categories[p.cat].name; 
         document.getElementById('screen-user').innerText = p.uploader; 
-        // 🛠️ 修正：確保頭像存在，如果載入失敗則使用隨機頭像
         const avatarUrl = p.avatar || getRandomAvatar(photoKey);
         const avatarImg = document.getElementById('screen-avatar');
         avatarImg.src = avatarUrl;
-        avatarImg.onerror = () => { avatarImg.src = getRandomAvatar(photoKey + 'fallback'); }; // 頭像載入失敗時的備援
+        avatarImg.onerror = () => { avatarImg.src = getRandomAvatar(photoKey + 'fallback'); }; 
 
-        // 🛠️ 修正：圖片載入失敗時的處理 (防止黑畫面)
         img.onload = () => { 
             img.style.opacity=1; n.style.opacity=1; n.style.transform='translate(0,0)'; 
             if(screenMode === 'winner_loop' && p.isWinner) { 
@@ -469,11 +527,10 @@ function updateScreen(){
                 img.style.transform="scale(1)"; 
             } 
         };
+        // 修正：若圖片載入失敗，保持黑畫面，不跳過
         img.onerror = () => {
-            // 如果圖片真的掛了，至少顯示個東西或跳過，不要全黑
             console.error("Image load failed:", p.url);
-            // 這裡可以選擇跳下一張，或顯示替代圖
-            screenNext(); 
+            // 不做任何事，讓畫面停留在黑底
         };
     }, 500); 
 }
