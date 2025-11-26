@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V26.3 - 12/6 決戰修正版</title>
+    <title>婚禮神攝手 V26.4 - 12/6 決戰最終版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -45,8 +45,28 @@
         .cat-btn.active { border-left-color: #1e293b !important; font-weight: 700 !important; color: #1e293b !important; }
         .cat-btn:not(.active) { border-left-color: transparent !important; color: #64748b !important; }
         .screen-mode-btn.active { transform: scale(1.02); }
-        .screen-controls-hidden .screen-controller, .screen-controls-hidden .screen-header { opacity: 0 !important; pointer-events: none !important; }
-        .screen-controller, .screen-header { transition: opacity 0.3s ease; }
+        
+        /* 控制列顯示邏輯 */
+        .screen-controller {
+            transform: translateX(-100%); /* 預設隱藏在左側外 */
+            transition: transform 0.3s ease;
+        }
+        .screen-controller.visible {
+            transform: translateX(0); /* 顯示 */
+        }
+        /* 觸發區域：左側邊緣 */
+        #screen-trigger-zone {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 20px; /* 觸發寬度 */
+            z-index: 60;
+        }
+        
+        .screen-header { transition: opacity 0.3s ease; opacity: 0; }
+        .screen-header:hover { opacity: 1; } /* 滑鼠移上去才顯示 header */
+
         .photo-preview { aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .notification-badge { animation: bounce-badge 1s infinite; }
@@ -56,12 +76,10 @@
         .heart-pop { animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes heartPop { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
         
-        /* 實心愛心樣式 
-           font-variation-settings: 'FILL' 1  -> 這是關鍵，讓圖示變成實心
-        */
+        /* 實心愛心樣式 */
         .filled-heart { 
             font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 加一點陰影更立體 */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2); 
         }
     </style>
 </head>
@@ -73,7 +91,6 @@
             <span class="inline-block px-3 py-1 rounded-full text-sm font-bold text-white mb-1 shadow-lg" id="lb-cat-badge">Category</span>
             <div class="flex items-center gap-3">
                 <div class="font-black text-2xl text-white tracking-wide drop-shadow-lg" id="lb-user-display">User Name</div>
-                <!-- 愛心標記 (燈箱內) - 使用 filled-heart 確保實心 -->
                 <span class="material-symbols-outlined filled-heart text-pink-500 text-4xl hidden heart-pop drop-shadow-lg" id="lb-heart-icon">favorite</span>
             </div>
             <div class="text-white/50 text-xs mt-1 font-mono">(雙擊照片加入最愛)</div>
@@ -84,7 +101,6 @@
         <button class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-white hover:bg-black/30 rounded-full transition z-20" onclick="lbNav(-1)"><span class="material-symbols-outlined text-4xl">chevron_left</span></button>
         <button class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-white hover:bg-black/30 rounded-full transition z-20" onclick="lbNav(1)"><span class="material-symbols-outlined text-4xl">chevron_right</span></button>
         
-        <!-- 照片本體 (加入雙擊事件) -->
         <img class="lightbox-img rounded-lg cursor-pointer transition active:scale-95" id="lb-img" src="" ondblclick="toggleFavoriteFromLightbox()">
         
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300 z-30" id="lb-feedback"><div class="bg-black/60 p-8 rounded-full backdrop-blur-md shadow-2xl"><span class="material-symbols-outlined text-8xl text-white" id="lb-feedback-icon">check</span></div></div>
@@ -95,10 +111,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.3</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.4</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.3 修正：</strong><br>• 愛心改為醒目實心樣式<br>• 徹底移除 UA/U0 文字頭像<br>• 確保頭像為隨機圖案</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.4 最終修正：</strong><br>• 徹底移除文字頭像 (白名單)<br>• 優化投影控制列 (滑鼠離開才收回)<br>• 實心愛心與隨機背景</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -126,7 +142,7 @@
     <div class="flex items-center gap-4">
         <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
         <div>
-            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.3</span></h1>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.4</span></h1>
             <div class="text-xs text-slate-500 flex items-center gap-1">
                 <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
                 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
@@ -164,7 +180,6 @@
                 <div class="absolute top-8 right-8 z-30 hidden drop-shadow-xl animate-bounce" id="screen-winner-trophy"><span class="material-symbols-outlined text-yellow-400 text-9xl" style="text-shadow: 0 4px 20px rgba(0,0,0,0.9);">emoji_events</span></div>
                 
                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-30 hidden transition-opacity duration-500" id="intro-overlay"><div class="text-9xl mb-6 animate-bounce">🥁</div><h2 class="text-7xl md:text-9xl font-black text-white tracking-widest uppercase mb-4 drop-shadow-2xl text-center" id="intro-title">CATEGORY</h2><p class="text-white/60 text-3xl tracking-[0.5em] animate-pulse">WINNER REVEAL</p></div>
-                <!-- 修正：頭像縮回正常尺寸 (w-32 h-32)，字體也稍微縮小回原本的平衡 -->
                 <div class="absolute bottom-16 left-16 bg-black/70 backdrop-blur-xl pl-8 pr-12 py-6 rounded-r-full border-l-8 border-white/40 flex items-center gap-6 shadow-2xl transition-all duration-700 opacity-0 translate-y-10 z-20 max-w-4xl" id="screen-info">
                     <div class="relative shrink-0"><img class="w-32 h-32 rounded-full border-4 border-white shadow-xl" id="screen-avatar" src=""></div>
                     <div class="text-left text-white">
@@ -174,7 +189,11 @@
                 </div>
                 <div class="absolute top-20 left-10 flex flex-col gap-4 z-50 pointer-events-none" id="toast-container"></div>
             </div>
-            <div class="screen-controller absolute left-0 top-0 bottom-0 w-20 hover:w-72 transition-all duration-300 bg-gradient-to-r from-black/90 to-transparent z-50 flex flex-col items-start py-8 pl-4 overflow-y-auto hidden-scrollbar">
+            
+            <!-- 觸發區域 -->
+            <div id="screen-trigger-zone"></div>
+            <!-- 控制列 -->
+            <div class="screen-controller absolute left-0 top-0 bottom-0 w-72 bg-gradient-to-r from-black/90 to-transparent z-50 flex flex-col items-start py-8 pl-4 overflow-y-auto hidden-scrollbar" id="screen-controller-panel">
                 <div class="mb-8 w-full pr-4 flex-shrink-0"><div class="text-white/30 text-[10px] uppercase font-bold mb-2 pl-1">Mode</div><div class="flex flex-col gap-2"><button class="screen-mode-btn active p-3 rounded-lg bg-blue-600 text-white shadow-lg flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden" id="btn-mode-loop" onclick="setScreenMode('loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">repeat</span><span class="font-bold text-sm">輪播模式</span></button><button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden" id="btn-mode-ceremony" onclick="setScreenMode('ceremony')"><span class="material-symbols-outlined text-xl flex-shrink-0">podium</span><span class="font-bold text-sm">頒獎典禮</span></button><button class="screen-mode-btn p-3 rounded-lg bg-white/10 text-white flex items-center gap-3 transition hover:scale-105 w-full whitespace-nowrap overflow-hidden disabled:opacity-30 disabled:cursor-not-allowed" disabled id="btn-mode-winner" onclick="setScreenMode('winner_loop')"><span class="material-symbols-outlined text-xl flex-shrink-0">star</span><span class="font-bold text-sm">頒獎後輪播</span></button></div></div>
                 <div class="w-full pr-4 flex-shrink-0" id="controls-ceremony" style="display:none"><div class="flex flex-col gap-3"><div class="text-white/30 text-[10px] uppercase font-bold pl-1">Reveal</div><button class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-blue-400" onclick="revealSequence('groom')"><span class="material-symbols-outlined">man</span> 最帥新郎賞</button><button class="w-full py-4 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-pink-400" onclick="revealSequence('bride')"><span class="material-symbols-outlined">woman</span> 最美新娘賞</button><button class="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-lg flex items-center gap-3 pl-4 border-l-4 border-amber-400" onclick="revealSequence('creative')"><span class="material-symbols-outlined">lightbulb</span> 最佳創意賞</button></div></div>
                 <div class="flex-1 flex flex-col items-center gap-4 w-full pr-4 pt-10" id="controls-loop"><div class="text-white/30 text-[10px] uppercase font-bold pl-1 self-start">Playback</div><button class="p-4 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur" onclick="screenPrev()"><span class="material-symbols-outlined">arrow_upward</span></button><button class="p-5 bg-white text-black rounded-full shadow-lg hover:scale-110 transition" id="btn-play" onclick="togglePlay()"><span class="material-symbols-outlined text-3xl">pause</span></button><button class="p-4 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur" onclick="screenNext()"><span class="material-symbols-outlined">arrow_downward</span></button></div>
@@ -189,12 +208,7 @@ const categories = { groom: { name: '最帥新郎賞', bg: 'bg-blue-100', text: 
 
 // 修正：只保留圖案風格，移除可能產生 UA/U0 的文字頭像風格
 const avatarStyles = [
-    'adventurer', 'adventurer-neutral', 'avataaars', 'avataaars-neutral',
-    'big-ears', 'big-ears-neutral', 'big-smile', 'bottts', 'bottts-neutral',
-    'croodles', 'croodles-neutral', 'fun-emoji', 'lorelei', 
-    'lorelei-neutral', 'micah', 'miniavs', 'notionists', 'notionists-neutral', 
-    'open-peeps', 'personas', 'pixel-art', 'pixel-art-neutral', 
-    'thumbs'
+    'avataaars', 'bottts', 'fun-emoji', 'lorelei', 'micah', 'miniavs', 'open-peeps', 'personas', 'thumbs'
 ];
 
 const API_URL = "https://fongde-wedding-backend.onrender.com";
@@ -238,7 +252,22 @@ function startApp() {
     startPolling(); refreshAll(); startScreenLoop(); 
 }
 
-function initScreenAutoHide() { const sv = document.getElementById('view-screen'); sv.addEventListener('mousemove', () => { showScreenControls(); resetMouseIdleTimer(); }); sv.addEventListener('mouseleave', () => clearTimeout(mouseIdleTimer)); document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; document.getElementById('fullscreen-icon').textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen'; }); }
+function initScreenAutoHide() {
+    const panel = document.getElementById('screen-controller-panel');
+    const trigger = document.getElementById('screen-trigger-zone');
+    
+    // 滑鼠進入觸發區：顯示控制列
+    trigger.addEventListener('mouseenter', () => {
+        panel.classList.add('visible');
+    });
+
+    // 滑鼠離開控制列面板：隱藏控制列
+    panel.addEventListener('mouseleave', () => {
+        panel.classList.remove('visible');
+    });
+    
+    document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; document.getElementById('fullscreen-icon').textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen'; }); 
+}
 function showScreenControls() { document.getElementById('view-screen').classList.remove('screen-controls-hidden'); }
 function hideScreenControls() { document.getElementById('view-screen').classList.add('screen-controls-hidden'); }
 function resetMouseIdleTimer() { clearTimeout(mouseIdleTimer); mouseIdleTimer = setTimeout(hideScreenControls, 1000); }
