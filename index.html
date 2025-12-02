@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮神攝手 V26.6 - 12/6 決戰最終穩定版</title>
+    <title>婚禮神攝手 V26.9 - 12/6 終極同步版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -125,10 +125,10 @@
 <div class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" id="intro-modal">
     <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative overflow-hidden flex flex-col slide-up">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-purple-600"></div>
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.6</h2>
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-slate-900"><span class="material-symbols-outlined text-pink-600">admin_panel_settings</span> 活動執行戰情室 V26.9</h2>
         <p class="text-slate-600 mb-4 text-sm">即將連線至 Render 後端：<br><span class="font-mono bg-slate-100 px-2 py-1 rounded text-xs text-slate-500 mt-1 block truncate">https://fongde-wedding-backend.onrender.com</span></p>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-800"><strong>⚠️ 注意：</strong> 首次連線可能需要 30-60 秒喚醒。</div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.6 最終優化：</strong><br>• 頒獎進度自動記憶 (防F5)<br>• 揭曉按鈕防連點機制<br>• 120人並發上傳確認 PASS</div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs text-blue-800"><strong>✅ V26.9 終極同步：</strong><br>• 強制同步鎖定狀態<br>• 投影端自動接收解鎖指令<br>• 解決多機不同步問題</div>
         <button class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg" onclick="startApp()">啟動連線 <span class="material-symbols-outlined">power_settings_new</span></button>
     </div>
 </div>
@@ -156,7 +156,7 @@
     <div class="flex items-center gap-4">
         <div class="bg-gradient-to-tr from-pink-600 to-purple-600 text-white p-2 rounded-lg shadow-md"><span class="material-symbols-outlined block">photo_camera</span></div>
         <div>
-            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.6</span></h1>
+            <h1 class="font-bold text-lg text-slate-800 tracking-wide">婚禮神攝手 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1 border">V26.9</span></h1>
             <div class="text-xs text-slate-500 flex items-center gap-1">
                 <span class="w-2 h-2 bg-slate-400 rounded-full" id="status-dot"></span> 
                 狀態: <span class="font-bold text-slate-500" id="sys-status">等待連線</span>
@@ -316,6 +316,7 @@ function refreshAll() { renderHelper(); renderCouple(); updateProgress(); docume
 
 function manualReconnect() { failedAttempts = 0; document.getElementById('btn-reconnect').classList.add('hidden'); document.getElementById('sys-status').innerText = "重新連線中..."; document.getElementById('sys-status').className = "font-bold text-yellow-600"; document.getElementById('status-dot').className = "w-2 h-2 bg-yellow-500 rounded-full animate-pulse"; fetchData(true); }
 
+// 🔥 V26.8 更新：在輪詢時檢查鎖定狀態
 async function startPolling() { await fetchData(true); await checkTestMode(); await checkSubmissionStatus(); pollInterval = setInterval(fetchData, 2000); }
 async function checkTestMode() { try { const res = await fetch(`${API_URL}/api/test-mode`); if(res.ok) { const data = await res.json(); updateTestModeUI(data.testMode); } } catch(e) {} }
 async function toggleTestMode() { const btn = document.getElementById('btn-toggle-test-mode'); btn.disabled = true; try { const res = await fetch(`${API_URL}/api/test-mode`, { method: 'POST' }); if(res.ok) { const data = await res.json(); updateTestModeUI(data.testMode); alert(data.message); } } catch(e) { alert('連線失敗'); } btn.disabled = false; }
@@ -380,6 +381,18 @@ async function fetchData(isFirst = false) {
                 document.getElementById('debug-photos').innerText = `${h.photos} 張`; 
                 if(h.testMode !== undefined) updateTestModeUI(h.testMode); 
                 if(h.submissionsOpen !== undefined) updateSubmissionStatusUI(h.submissionsOpen); 
+                
+                // 🔥 同步鎖定狀態 logic
+                if(h.winnersLocked !== undefined && h.winnersLocked !== appState.winnersLocked) {
+                    appState.winnersLocked = h.winnersLocked;
+                    saveToLocalCache();
+                    refreshAll();
+                    // 如果剛變成鎖定狀態，顯示提示
+                    if(appState.winnersLocked) {
+                        // 這裡可以加一個 Toast 或 Alert 提示音控
+                        console.log("🔒 系統已接收到鎖定指令");
+                    }
+                }
             } 
         }).catch(()=>{}); 
         
@@ -450,6 +463,7 @@ function renderCouple(){
 
 function checkAutoUnlockCeremony() {
     const btn = document.getElementById('btn-mode-ceremony');
+    // 解鎖條件：名單已鎖定
     if (appState.winnersLocked) {
         btn.disabled = false;
         btn.classList.remove('btn-disabled');
@@ -461,6 +475,7 @@ function checkAutoUnlockCeremony() {
 
 function checkAutoUnlockWinnerLoop() {
     const btn = document.getElementById('btn-mode-winner');
+    // 解鎖條件：三個獎項都已揭曉
     if (winnersRevealedCount >= 3) {
         btn.disabled = false;
         btn.classList.remove('btn-disabled');
@@ -543,7 +558,7 @@ function showToast(n){
 }
 
 function setScreenMode(m){ 
-    // 切換前先停止目前的輪播，避免多個 interval 同時運作
+    // 🔥 修正 1: 切換模式前，強制停止舊的輪播
     stopScreenLoop();
     
     screenMode = m; 
@@ -621,7 +636,6 @@ function revealSequence(cat){
     if (btn) {
         btn.disabled = true;
         btn.classList.add('opacity-50', 'cursor-not-allowed');
-        // 可以選擇顯示載入中圖示或文字變更
     }
 
     drumAudio.currentTime = 0;
@@ -669,9 +683,9 @@ function revealSequence(cat){
             setTimeout(fireConfetti, 800); 
             setTimeout(fireConfetti, 1600); 
             
-            // 更新已揭曉數量並檢查是否開啟頒獎後輪播
+            // 🔥 修正 4: 只有在這裡才增加計數器
             winnersRevealedCount++;
-            saveToLocalCache(); // 儲存頒獎進度
+            saveToLocalCache(); 
             checkAutoUnlockWinnerLoop();
         }, 500); 
     }, DRUM_DURATION); 
@@ -696,9 +710,25 @@ function fireConfetti() {
     } 
 }
 
+// 🔥 V26.8 同步鎖定邏輯
 function openConfirmModal(){ ['groom','bride','creative'].forEach(c => { const w = Array.from(submissions.values()).find(x => x.isWinner && x.cat === c); if(w) { document.getElementById(`confirm-card-${c}`).innerHTML = `<div class="font-bold text-${categories[c].text.split('-')[1]}-800 mb-2">${categories[c].name}</div><div class="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center rounded-lg mb-2 shadow-inner overflow-hidden border"><img src="${w.url}" class="max-w-full max-h-full object-contain"></div><div class="font-bold text-slate-700">${w.uploader}</div>`; } }); document.getElementById('confirm-modal').classList.remove('hidden'); }
 function closeConfirmModal(){ document.getElementById('confirm-modal').classList.add('hidden'); }
-function finalizeWinners(){ appState.winnersLocked = true; saveToLocalCache(); closeConfirmModal(); refreshAll(); checkAutoUnlockCeremony(); checkAutoUnlockWinnerLoop(); alert('✅ 名單已鎖定！\n\n請手動切換到「投影」頁面，選擇「頒獎典禮」或「頒獎後輪播」模式。'); }
+function finalizeWinners(){ 
+    appState.winnersLocked = true; 
+    saveToLocalCache(); 
+    closeConfirmModal(); 
+    refreshAll(); 
+    checkAutoUnlockCeremony(); 
+    checkAutoUnlockWinnerLoop(); 
+    
+    fetch(`${API_URL}/api/winners/lock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locked: true })
+    }).catch(console.error);
+
+    alert('✅ 名單已鎖定！\n\n請手動切換到「投影」頁面，選擇「頒獎典禮」或「頒獎後輪播」模式。'); 
+}
 
 function switchTab(t){ currentRole = t === 'couple' ? 'couple' : 'helper'; document.querySelectorAll('.view-section').forEach(e => e.classList.add('hidden')); const viewEl = document.getElementById('view-' + t); viewEl.classList.remove('hidden'); if(t !== 'screen') viewEl.classList.add('flex'); document.getElementById('main-header').style.display = t === 'screen' ? 'none' : 'flex'; ['helper', 'couple', 'screen'].forEach(tab => { const btn = document.getElementById('tab-' + tab); if (tab === t) { btn.classList.add('bg-white', 'shadow-sm', 'text-slate-800', 'ring-1', 'ring-slate-200'); btn.classList.remove('text-slate-500', 'hover:text-slate-900'); } else { btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800', 'ring-1', 'ring-slate-200'); btn.classList.add('text-slate-500', 'hover:text-slate-900'); } }); if(t === 'screen') { updateScreen(); resetMouseIdleTimer(); } }
 
